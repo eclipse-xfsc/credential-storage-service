@@ -11,7 +11,7 @@ require (
 	github.com/eclipse-xfsc/oid4-vci-vp-library v1.4.6-goarchv1230
 	github.com/eclipse-xfsc/ssi-jwt v1.2.1-goarchv1230
 	github.com/gin-gonic/gin v1.10.0
-	github.com/gocql/gocql v1.6.0
+	github.com/gocql/gocql v1.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.1.5
 	github.com/sirupsen/logrus v1.9.3
