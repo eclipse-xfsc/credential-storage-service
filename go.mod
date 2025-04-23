@@ -1,15 +1,16 @@
 module github.com/eclipse-xfsc/credential-storage-service
 
 go 1.23.0
+toolchain go1.24.1
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.16.0
 	github.com/eclipse-xfsc/cloud-event-provider v0.1.5
-	github.com/eclipse-xfsc/crypto-provider-core v1.4.1-goarchv1230
+	github.com/eclipse-xfsc/crypto-provider-core v1.4.1
 	github.com/eclipse-xfsc/microservice-core-go v1.1.0-goarchv1230
 	github.com/eclipse-xfsc/nats-message-library v1.1.13-goarchv1230
 	github.com/eclipse-xfsc/oid4-vci-vp-library v1.4.6-goarchv1230
-	github.com/eclipse-xfsc/ssi-jwt v1.2.1-goarchv1230
+	github.com/eclipse-xfsc/ssi-jwt v1.2.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gocql/gocql v1.6.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -38,7 +39,7 @@ require (
 	github.com/eapache/go-resiliency v1.5.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/eclipse-xfsc/did-core v1.0.2-goarchv1230 // indirect
+	github.com/eclipse-xfsc/did-core v1.0.2 // indirect
 	github.com/eclipse/paho.golang v0.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
