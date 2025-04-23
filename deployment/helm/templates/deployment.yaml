@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "app.name" . }}"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+      annotations:
+  {{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+        {{- include "app.securitycontext" . | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.imagePullPolicy | quote }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.server.http.port }}
+        readinessProbe:
+          httpGet:
+            path: /v1/metrics/health
+            port: {{ .Values.server.http.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 2
+          failureThreshold: 2
+          timeoutSeconds: 5
+        args: {{  range .Values.config.arguments }}
+                - {{ . }}
+              {{ end }}
+
+        env:
+          - name:  "STORAGESERVICE_CASSANDRA_HOST"
+            value:  {{ .Values.config.cassandra.hosts }}
+          - name:  "STORAGESERVICE_CASSANDRA_USER"
+            value:  {{ .Values.config.cassandra.user }}
+          - name:  "STORAGESERVICE_CASSANDRA_KEYSPACE"
+            value:  {{ .Values.config.cassandra.keyspace }}
+          - name:  "STORAGESERVICE_CASSANDRA_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.config.cassandra.passwordSecret }}
+                key: {{ .Values.config.cassandra.passwordKey }}     
+          - name:  "LISTEN_PORT"
+            value:  "{{ .Values.server.http.port }}"
+          - name:  "LISTEN_ADDR"
+            value:  "{{ .Values.server.http.address }}"
+          - name:  "STORAGESERVICE_PROFILE"
+            value:  {{ .Values.config.service.profiles }}
+          - name:  "STORAGESERVICE_LOG_LEVEL"
+            value:  {{ .Values.config.service.logLevel }}
+          - name: "STORAGESERVICE_COUNTRY"
+            value:  {{ .Values.config.service.country }}
+          - name: "STORAGESERVICE_REGION"
+            value:  {{ .Values.config.service.region }}
+          - name: "STORAGESERVICE_MODE"
+            value:  {{ .Values.config.service.mode }}
+          - name: "STORAGESERVICE_CRYPTO_NAMESPACE"
+            value:  {{ .Values.config.crypto.namespace }}
+          - name: "STORAGESERVICE_CRYPTO_SIGNKEY"
+            value:  {{ .Values.config.crypto.signKey }}
+          - name:  "STORAGESERVICE_MESSAGING_ENABLED"
+            value: "{{.Values.config.messaging.enabled}}"
+          - name:  "STORAGESERVICE_MESSAGING_STORAGETOPIC"
+            value: {{.Values.config.messaging.storageTopic}}
+          - name:  "STORAGESERVICE_MESSAGING_URL"
+            value: {{.Values.config.messaging.url}}
+          - name:  "STORAGESERVICE_MESSAGING_QUEUEGROUP"
+            value: {{.Values.config.messaging.queueGroup}}
+          {{- if .Values.config.vault }}
+          - name: "VAULT_ADRESS"
+            value: {{.Values.config.vault.address}}
+          - name:  "VAULT_TOKEN"
+            valueFrom:
+              secretKeyRef:
+                name: {{.Values.config.vault.tokenName}}
+                key: {{.Values.config.vault.tokenKey}}
+          {{- end }}

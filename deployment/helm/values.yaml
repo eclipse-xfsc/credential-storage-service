@@ -1,0 +1,80 @@
+replicaCount: 1
+name: storage-service
+
+image:
+  repository: node-654e3bca7fbeeed18f81d7c7.ps-xaas.io/ocm-wstack
+  imagePullPolicy: Always
+  name: storage-service
+  tag: main
+
+podAnnotations: {}
+
+resources:
+  # requests:
+  #   cpu: 25m
+  #   memory: 64Mi
+  # limits:
+  #   cpu: 150m
+  #   memory: 128Mi
+
+service:
+  port: 8080
+  type: ClusterIP
+
+cors:
+  active: true
+  origins: "*"
+
+server:
+  http:
+    port: 8080
+    address: 0.0.0.0
+
+ingress:
+  enabled: true
+  annotations:
+    #cert-manager.io/issuer: letsencrypt-development
+    #acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.org/client-max-body-size: 2K #Maximum Size of Credentials which are uploadable
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/tenants/tenant_space/storage/$2
+  hosts:
+    - host:
+      paths:
+        - path: /storage(/|$)(.*)
+          port: 8080
+  tls:
+    - secretName: xfsc-wildcard
+      hosts:
+        - ocm.xfsc.dev
+security:
+  runAsNonRoot: false
+  runAsUid: 1000
+  runAsGid: 1000
+config:
+  port: 8080
+  cassandra:
+    hosts: cassandra.cassandra.svc.cluster.local:9042
+    keyspace: user_space
+    user: cassandra
+    passwordSecret: cassandra
+    passwordKey: cassandra-password
+  crypto:
+    signKey: test
+    namespace: transit
+  service:
+    logLevel: info
+    profiles: API
+    basedomain: http://localhost:8080
+    country: DE
+    region: EU
+    mode: DIRECT
+  messaging:
+    enabled: true
+    storageTopic: storage
+    url: nats.nats.svc.cluster.local:4222
+    queueGroup: storage-service
+    protocol: nats
+  vault:
+    address: http://vault.vault.svc.cluster.local:8200
+    tokenName: vault
+    tokenKey: token

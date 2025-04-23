@@ -1,0 +1,370 @@
+definitions:
+  model.GetCredentialModel:
+    properties:
+      credentials:
+        additionalProperties: true
+        type: object
+      groups:
+        items:
+          $ref: '#/definitions/presentation.FilterResult'
+        type: array
+      receipt:
+        type: string
+    type: object
+  presentation.Alg:
+    enum:
+    - EdDSA
+    - ES256
+    - PS256
+    type: string
+    x-enum-varnames:
+    - EDDSA
+    - ES256
+    - PS256
+  presentation.Constraints:
+    properties:
+      fields:
+        description: The constraints object MAY contain a fields property
+        items:
+          $ref: '#/definitions/presentation.Field'
+        type: array
+      limit_disclosure:
+        allOf:
+        - $ref: '#/definitions/presentation.Disclosure'
+        description: The constraints object MAY contain a limit_disclosure property
+    type: object
+  presentation.Description:
+    properties:
+      format:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      purpose:
+        type: string
+    type: object
+  presentation.Disclosure:
+    enum:
+    - required
+    - preferred
+    type: string
+    x-enum-varnames:
+    - Required
+    - Preferred
+  presentation.Field:
+    properties:
+      filter:
+        allOf:
+        - $ref: '#/definitions/presentation.Filter'
+        description: Optional Field
+      id:
+        description: Optional Field
+        type: string
+      name:
+        description: Optional Field
+        type: string
+      path:
+        description: Mandatory Field
+        items:
+          type: string
+        type: array
+      purpose:
+        description: Optional Field
+        type: string
+    type: object
+  presentation.Filter:
+    properties:
+      pattern:
+        type: string
+      type:
+        type: string
+    type: object
+  presentation.FilterResult:
+    properties:
+      credentials:
+        additionalProperties: true
+        type: object
+      description:
+        $ref: '#/definitions/presentation.Description'
+    type: object
+  presentation.Format:
+    properties:
+      jwt:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      jwt_vc:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      jwt_vp:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      ldp:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      ldp_vc:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      ldp_vp:
+        $ref: '#/definitions/presentation.FormatSpecification'
+      verifiable-credential+sd-jwt:
+        $ref: '#/definitions/presentation.FormatSpecification'
+    type: object
+  presentation.FormatSpecification:
+    properties:
+      alg:
+        items:
+          $ref: '#/definitions/presentation.Alg'
+        type: array
+      proof_type:
+        items:
+          $ref: '#/definitions/presentation.ProofType'
+        type: array
+    type: object
+  presentation.InputDescriptor:
+    properties:
+      constraints:
+        $ref: '#/definitions/presentation.Constraints'
+      format:
+        $ref: '#/definitions/presentation.Format'
+      group:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      purpose:
+        type: string
+    type: object
+  presentation.PresentationDefinition:
+    properties:
+      format:
+        $ref: '#/definitions/presentation.Format'
+      id:
+        type: string
+      input_descriptors:
+        items:
+          $ref: '#/definitions/presentation.InputDescriptor'
+        type: array
+      name:
+        type: string
+      purpose:
+        type: string
+      submission_requirements:
+        items:
+          $ref: '#/definitions/presentation.SubmissionRequirement'
+        type: array
+    type: object
+  presentation.ProofType:
+    enum:
+    - JsonWebSignature2020
+    - Ed25519Signature2018
+    - EcdsaSecp256k1Signature2019
+    - RsaSignature2018
+    type: string
+    x-enum-varnames:
+    - JsonWebSignature2020
+    - Ed25519Signature2018
+    - EcdsaSecp256k1Signature2019
+    - RsaSignature2018
+  presentation.Rule:
+    enum:
+    - all
+    - pick
+    type: string
+    x-enum-varnames:
+    - All
+    - Pick
+  presentation.SubmissionRequirement:
+    properties:
+      from:
+        type: string
+      name:
+        type: string
+      purpose:
+        type: string
+      rule:
+        $ref: '#/definitions/presentation.Rule'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Service responsible for storing and retrieving credentials and presentations
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Storage service API
+  version: "1.0"
+paths:
+  /credentials:
+    post:
+      consumes:
+      - application/json
+      description: Get credentials from the storage
+      parameters:
+      - description: Presentation definition details
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/presentation.PresentationDefinition'
+      - description: Account ID
+        in: path
+        name: account
+        required: true
+        type: string
+      - description: Tenant ID
+        in: path
+        name: tenantId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: credentials
+          schema:
+            $ref: '#/definitions/model.GetCredentialModel'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get credentials from the storage
+      tags:
+      - credentials
+  /credentials/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Add a credential to the storage
+      parameters:
+      - description: application/json
+        in: header
+        name: Content-Type
+        required: true
+        type: string
+      - description: The VerifiableCredential raw data to upload
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      - description: Account ID
+        in: path
+        name: account
+        required: true
+        type: string
+      - description: Tenant ID
+        in: path
+        name: tenantId
+        required: true
+        type: string
+      - description: ID of the credential
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Add a credential to the storage
+      tags:
+      - credentials
+  /presentations:
+    post:
+      consumes:
+      - application/json
+      description: Add a presentation to the storage
+      parameters:
+      - description: Presentation definition details
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/presentation.PresentationDefinition'
+      - description: Account ID
+        in: path
+        name: account
+        required: true
+        type: string
+      - description: Tenant ID
+        in: path
+        name: tenantId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: presentations
+          schema:
+            $ref: '#/definitions/model.GetCredentialModel'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Add a presentation to the storage
+      tags:
+      - presentations
+  /presentations/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Add a presentation to the storage
+      parameters:
+      - description: application/json
+        in: header
+        name: Content-Type
+        required: true
+        type: string
+      - description: The VerifiablePresentation raw data to upload
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      - description: Account ID
+        in: path
+        name: account
+        required: true
+        type: string
+      - description: Tenant ID
+        in: path
+        name: tenantId
+        required: true
+        type: string
+      - description: ID of the presentation
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Receipt
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Add a presentation to the storage
+      tags:
+      - presentations
+swagger: "2.0"

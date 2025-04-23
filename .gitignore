@@ -1,0 +1,8 @@
+.idea
+.netrc
+.env.credentials
+*.exe
+.DS_Store
+jupyter
+.vscode
+.engines

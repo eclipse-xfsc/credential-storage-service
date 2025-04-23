@@ -1,0 +1,104 @@
+version: "3.8"
+
+networks:
+  cassandra:
+    driver: bridge
+
+services:
+  server:
+    container_name: $PROJECT_NAME-api_server
+    image: ${IMAGE_REPO}:${IMAGE_TAG}
+    build:
+      context: ../../.
+      dockerfile: ./deployment/docker/Dockerfile
+      args:
+        pluginRepoUrl: $pluginRepoUrl
+        pluginTag: $pluginBranch
+
+    ports:
+      - "8080:8080"
+    volumes:
+      - ".:/app"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      initialize:
+        condition: service_completed_successfully
+      insert:
+        condition: service_completed_successfully
+      nats:
+        condition: service_started
+      vault:
+        condition: service_started
+
+    env_file:
+      - ../../.env
+    networks:
+      - cassandra
+
+  cassandra:
+    container_name: $PROJECT_NAME-cassandra
+    image: cassandra:latest
+    restart: always
+    hostname: cassandra
+    ports:
+      - "9042:9042"
+    networks:
+      - cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  initialize:
+    container_name: $PROJECT_NAME-initialize
+    image: nuvo/docker-cqlsh
+    command: cqlsh -f /cql/initialize.cql --cqlversion="3.4.6"
+    networks:
+      - cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      CQLSH_PORT: 9042
+      CQLVERSION: 3.4.6
+    volumes:
+      - "../../scripts/cql/initialize.cql:/cql/initialize.cql"
+
+  insert:
+    container_name: $PROJECT_NAME-insert
+    image: nuvo/docker-cqlsh
+    command: cqlsh -f /cql/insert.cql --cqlversion="3.4.6"
+    networks:
+      - cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      initialize:
+        condition: service_completed_successfully
+    environment:
+      CQLSH_PORT: 9042
+      CQLVERSION: 3.4.6
+    volumes:
+      - "../../scripts/cql/insert.cql:/cql/insert.cql"
+
+  nats:
+    container_name: $PROJECT_NAME-nats
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "6222:6222"
+      - "8222:8222"
+    networks:
+      - cassandra
+
+  vault:
+    container_name: $PROJECT_NAME-vault
+    image: hashicorp/vault:latest
+    ports:
+      - "8200:8200"
+    networks:
+      - cassandra
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: $VAULT_TOKEN
