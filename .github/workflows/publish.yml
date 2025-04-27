@@ -11,6 +11,10 @@ jobs:
     with: 
        build_args: --build-arg pluginRepoUrl=https://github.com/eclipse-xfsc/crypto-provider-hashicorp-vault-plugin \
                    --build-arg pluginTag=v1.3.0 \
-       platforms: linux/amd64,linux/arm64
+       dockerfile: "deployment/docker"
+       harbor_config: "deployment/harbor.config"
   helm:
     uses: eclipse-xfsc/dev-ops/.github/workflows/helm.yml@main
+    with: 
+      buildContext:  "deployment/helm"
+      harbor_config: "deployment/harbor.config"
