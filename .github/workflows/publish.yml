@@ -8,6 +8,7 @@ on:
 jobs:
   dockerbuild:
     uses: eclipse-xfsc/dev-ops/.github/workflows/dockerbuild.yml@main
+    secrets: inherit
     with: 
        build_args: pluginRepoUrl=https://github.com/eclipse-xfsc/crypto-provider-hashicorp-vault-plugin,pluginTag=v1.3.0
        dockerfile: "deployment/docker"
@@ -15,6 +16,7 @@ jobs:
        repo_name: "storage-service"
   helm:
     uses: eclipse-xfsc/dev-ops/.github/workflows/helm.yml@main
+    secrets: inherit
     with: 
       buildContext:  "deployment/helm"
       harbor_config: "deployment/harbor.config"
