@@ -10,7 +10,7 @@ jobs:
     uses: eclipse-xfsc/dev-ops/.github/workflows/dockerbuild.yml@main
     secrets: inherit
     with: 
-       build_args: pluginRepoUrl=https://github.com/eclipse-xfsc/crypto-provider-hashicorp-vault-plugin,pluginTag=v1.3.0
+       build_args: pluginRepoUrl=https://github.com/eclipse-xfsc/crypto-provider-hashicorp-vault-plugin,pluginTag=v1.3.1+goarchv1230
        dockerfile: "deployment/docker/Dockerfile"
        harbor_config: "deployment/harbor.config"
        repo_name: "storage-service"
