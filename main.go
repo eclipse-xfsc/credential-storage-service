@@ -199,10 +199,8 @@ func main() {
 		return
 	}
 
-	if config.CurrentStorageConfig.Messaging.Enabled {
-		if err := event.StartCloudEvents(); err != nil {
-			return
-		}
+	if err := event.StartCloudEvents(); err != nil {
+		return
 	}
 
 	if env.GetMode() == "REMOTE" || env.GetMode() == "DIRECT" {
