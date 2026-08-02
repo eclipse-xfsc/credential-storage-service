@@ -3,12 +3,11 @@ package common
 import (
 	"github.com/eclipse-xfsc/credential-storage-service/docs"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/connection"
-	cryptoProvider "github.com/eclipse-xfsc/credential-storage-service/internal/crypto"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	logPkg "github.com/eclipse-xfsc/microservice-core-go/pkg/logr"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 )
 
 type Environment struct {
@@ -20,6 +19,7 @@ type Environment struct {
 	contentType     string
 	logger          logPkg.Logger
 	isHealthy       bool
+	cryptoProvider  types.CryptoProvider
 }
 
 var env *Environment
@@ -40,8 +40,12 @@ func (e *Environment) GetSession() connection.SessionInterface {
 	return e.session
 }
 
+func (e *Environment) SetCryptoProvider(provider types.CryptoProvider) {
+	e.cryptoProvider = provider
+}
+
 func (e *Environment) GetCryptoProvider() types.CryptoProvider {
-	return cryptoProvider.GetCryptoProvider()
+	return e.cryptoProvider
 }
 
 func (e *Environment) GetAccountPartition(account string) string {

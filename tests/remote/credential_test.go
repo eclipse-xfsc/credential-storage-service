@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 	"github.com/gin-gonic/gin"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwe"
@@ -62,7 +62,8 @@ func init() {
 	credentialEnv.SetContentType("application/jose")
 	api.AddCredentialRoutes(group, credentialEnv)
 
-	cryptoProvider.CreateCryptoProvider(true, nil)
+	provider := new(cryptoProvider.TestProvider)
+	credentialEnv.SetCryptoProvider(provider)
 	credentialEnv.SetCryptoNamespace("unique")
 
 	parameter := types.CryptoKeyParameter{
@@ -77,7 +78,7 @@ func init() {
 		KeyType: types.Aes256GCM,
 	}
 
-	cryptoProvider.GetCryptoProvider().GenerateKey(parameter)
+	provider.GenerateKey(parameter)
 }
 
 //func StartConnection(env *common.Environment) {

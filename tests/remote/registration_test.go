@@ -28,7 +28,7 @@ func init() {
 	provider := new(crypto.TestProvider)
 
 	provider.AddKey("test", rawKey)
-	crypto.CreateCryptoProvider(true, provider)
+	registrationEnv.SetCryptoProvider(provider)
 
 	registrationEngine = gin.Default()
 	tenantGroup := registrationEngine.Group("/:tenantId")

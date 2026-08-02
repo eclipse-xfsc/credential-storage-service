@@ -36,7 +36,7 @@ func init() {
 
 	provider.AddKey("test", rawKey)
 
-	crypto.CreateCryptoProvider(true, provider)
+	authEnv.SetCryptoProvider(provider)
 	authEnv.SetCryptoNamespace("transit")
 	authEnv.SetCryptoSignKey("test")
 

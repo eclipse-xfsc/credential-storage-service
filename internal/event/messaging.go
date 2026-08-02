@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
@@ -28,13 +29,21 @@ var storagemessaging = new(StorageMessaging)
 
 func StartCloudEvents() error {
 	log.Info("start messaging!")
+
+	dur, err := time.ParseDuration(config.CurrentStorageConfig.Nats.TimeoutInSec)
+
+	if err != nil {
+		return err
+	}
+
 	client, err := cloudeventprovider.New(cloudeventprovider.Config{
 		Protocol: cloudeventprovider.ProtocolTypeNats,
 		Settings: cloudeventprovider.NatsConfig{
-			Url:        config.CurrentStorageConfig.Messaging.Url,
-			QueueGroup: config.CurrentStorageConfig.Messaging.QueueGroup,
+			Url:          config.CurrentStorageConfig.Nats.Url,
+			QueueGroup:   config.CurrentStorageConfig.Nats.QueueGroup,
+			TimeoutInSec: dur,
 		},
-	}, cloudeventprovider.ConnectionTypeSub, config.CurrentStorageConfig.Messaging.StorageTopic)
+	}, cloudeventprovider.ConnectionTypeSub, config.CurrentStorageConfig.Nats.StorageTopic)
 	if err != nil {
 		log.Fatal(err)
 	}

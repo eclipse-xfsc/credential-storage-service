@@ -2,17 +2,25 @@ version: "3.9"
 
 services:
   # credential-storage:
-  #   build: .
+  #   build:
+  #     context: ../..
+  #     dockerfile: deployment/docker/Dockerfile
   #   ports:
   #     - "8080:8080"
   #   depends_on:
   #     cassandra:
   #       condition: service_healthy
-  #     openbao:
-  #       condition: service_healthy
+  #     crypto-provider:
+  #       condition: service_started
   #   environment:
-  #     VAULT_ADDR: http://openbao:8200
-  #     VAULT_TOKEN: dev-root-token
+  #     STORAGESERVICE_CASSANDRA_HOST: cassandra:9042
+  #     STORAGESERVICE_CASSANDRA_USER: cassandra
+  #     STORAGESERVICE_CASSANDRA_PASSWORD: cassandra
+  #     STORAGESERVICE_CASSANDRA_KEYSPACE: ocm
+  #     STORAGESERVICE_CRYPTO_NAMESPACE: transit
+  #     STORAGESERVICE_CRYPTO_SIGNKEY: test
+  #     STORAGESERVICE_CRYPTO_GRPC_ADDR: crypto-provider:50051
+  #     STORAGESERVICE_MODE: DIRECT
   #   networks:
   #     - xfsc
 
@@ -43,6 +51,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    networks:
+      - xfsc
+
+  crypto-provider:
+    image: node-654e3bca7fbeeed18f81d7c7.de-west-1.xaas.plus.cloud/tsa/crypto-provider-hashicorp-vault-plugin@sha256:b65581777a9fc28d3aac5757e7125d8e996132753826d55740207166a3aff0bd
+    depends_on:
+      openbao:
+        condition: service_healthy
+    environment:
+      CRYPTO_GRPC_ADDR: 0.0.0.0:50051
+      VAULT_ADRESS: http://openbao:8200
+      VAULT_TOKEN: dev-root-token
+    expose:
+      - "50051"
+    ports:
+      - "50051:50051"
     networks:
       - xfsc
 

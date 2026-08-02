@@ -10,7 +10,7 @@ import (
 	handlers "github.com/eclipse-xfsc/credential-storage-service/internal/handlers/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/model"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/lestrrat-go/jwx/v2/jwa"

@@ -11,17 +11,17 @@ type storageConfiguration struct {
 	Mode                 string `mapstructure:"mode" envconfig:"STORAGESERVICE_MODE" default:"DIRECT"`
 	UnitTestModeOn       bool   `mapstructure:"unitTestModeOn" envconfig:"STORAGESERVICE_UNITTESTMODEON" default:"false"`
 
-	Messaging struct {
-		Enabled      bool   `mapstructure:"enabled" envconfig:"STORAGESERVICE_MESSAGING_ENABLED" default:"false"`
-		StorageTopic string `mapstructure:"storageTopic" envconfig:"STORAGESERVICE_MESSAGING_STORAGETOPIC"`
-		Url          string `mapstructure:"url" envconfig:"STORAGESERVICE_MESSAGING_URL"`
-		QueueGroup   string `mapstructure:"queueGroup" envconfig:"STORAGESERVICE_MESSAGING_QUEUEGROUP"`
-	} `mapstructure:"messaging"`
+	Nats struct {
+		StorageTopic string `mapstructure:"storageTopic" envconfig:"STORAGESERVICE_NATS_STORAGETOPIC"`
+		Url          string `mapstructure:"url" envconfig:"STORAGESERVICE_NATS_URL"`
+		QueueGroup   string `mapstructure:"queueGroup" envconfig:"STORAGESERVICE_NATS_QUEUEGROUP"`
+		TimeoutInSec string `mapstructure:"queueGroup" envconfig:"STORAGESERVICE_NATS_REQUEST_TIMEOUT"`
+	} `mapstructure:"nats"`
 
 	Crypto struct {
-		Namespace  string `mapstructure:"namespace" envconfig:"STORAGESERVICE_CRYPTO_NAMESPACE"`
-		SignKey    string `mapstructure:"signKey" envconfig:"STORAGESERVICE_CRYPTO_SIGNKEY"`
-		PluginPath string `mapstructure:"pluginPath" envconfig:"STORAGESERVICE_CRYPTO_PLUGINPATH" default:"/etc/plugins"`
+		Namespace string `mapstructure:"namespace" envconfig:"STORAGESERVICE_CRYPTO_NAMESPACE"`
+		SignKey   string `mapstructure:"signKey" envconfig:"STORAGESERVICE_CRYPTO_SIGNKEY"`
+		GrpcAddr  string `mapstructure:"grpcAddr" envconfig:"STORAGESERVICE_CRYPTO_GRPC_ADDR" default:"crypto-provider:50051"`
 	} `mapstructure:"crypto"`
 
 	Cassandra struct {
