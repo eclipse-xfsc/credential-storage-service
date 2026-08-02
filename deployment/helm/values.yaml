@@ -65,15 +65,13 @@ config:
     logLevel: info
     profiles: API
     basedomain: http://localhost:8080
-    country: DE
-    region: EU
     mode: DIRECT
   messaging:
     enabled: true
     storageTopic: storage
-    url: nats.nats.svc.cluster.local:4222
-    queueGroup: storage-service
-    protocol: nats
+    url: nats://nats.nats.svc.cluster.local:4222
+    queueGroup: credential-storage-service
+    requestTimeout: 10s
   vault:
     address: http://vault.vault.svc.cluster.local:8200
     tokenName: vault

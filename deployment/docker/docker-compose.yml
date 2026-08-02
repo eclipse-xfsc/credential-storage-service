@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # Uncomment this service to run the credential storage service in Docker.
   # credential-storage:
   #   build:
   #     context: ../..
@@ -8,10 +9,12 @@ services:
   #   ports:
   #     - "8080:8080"
   #   depends_on:
-  #     cassandra:
-  #       condition: service_healthy
+  #     cassandra-init:
+  #       condition: service_completed_successfully
   #     crypto-provider:
   #       condition: service_started
+  #     nats:
+  #       condition: service_healthy
   #   environment:
   #     STORAGESERVICE_CASSANDRA_HOST: cassandra:9042
   #     STORAGESERVICE_CASSANDRA_USER: cassandra
@@ -21,6 +24,10 @@ services:
   #     STORAGESERVICE_CRYPTO_SIGNKEY: test
   #     STORAGESERVICE_CRYPTO_GRPC_ADDR: crypto-provider:50051
   #     STORAGESERVICE_MODE: DIRECT
+  #     STORAGESERVICE_NATS_STORAGETOPIC: storage
+  #     STORAGESERVICE_NATS_URL: nats://nats:4222
+  #     STORAGESERVICE_NATS_QUEUEGROUP: credential-storage-service
+  #     STORAGESERVICE_NATS_REQUEST_TIMEOUT: 10s
   #   networks:
   #     - xfsc
 
@@ -29,10 +36,75 @@ services:
     ports:
       - "9042:9042"
     healthcheck:
-      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' || exit 1"]
-      interval: 20s
+      test:
+        - CMD-SHELL
+        - cqlsh 127.0.0.1 9042 -e "DESCRIBE KEYSPACES" || exit 1
+      interval: 10s
       timeout: 10s
-      retries: 15
+      retries: 30
+      start_period: 30s
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    networks:
+      - xfsc
+
+  cassandra-init:
+    image: cassandra:5.0
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    restart: "no"
+    command:
+      - /bin/bash
+      - -ec
+      - |
+        echo "Initializing Cassandra..."
+
+        cqlsh cassandra 9042 <<'CQL'
+        CREATE KEYSPACE IF NOT EXISTS ocm
+        WITH replication = {
+          'class': 'SimpleStrategy',
+          'replication_factor': 1
+        };
+
+        USE ocm;
+
+        CREATE TABLE IF NOT EXISTS credentials (
+          account_partition text,
+          region text,
+          country text,
+          account text,
+          tenant_id text,
+          objects map<text, text>,
+          PRIMARY KEY (
+            (account_partition, region, country),
+            account,
+            tenant_id
+          )
+        );
+        CQL
+
+        echo "Cassandra initialization completed."
+    networks:
+      - xfsc
+
+  nats:
+    image: nats:2.10-alpine
+    command:
+      - "--http_port"
+      - "8222"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://127.0.0.1:8222/healthz
+      interval: 5s
+      timeout: 3s
+      retries: 12
     networks:
       - xfsc
 
@@ -47,7 +119,11 @@ services:
       BAO_ADDR: http://0.0.0.0:8200
       BAO_API_ADDR: http://openbao:8200
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8200/v1/sys/health"]
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://127.0.0.1:8200/v1/sys/health
       interval: 10s
       timeout: 5s
       retries: 12
@@ -69,6 +145,9 @@ services:
       - "50051:50051"
     networks:
       - xfsc
+
+volumes:
+  cassandra-data:
 
 networks:
   xfsc:

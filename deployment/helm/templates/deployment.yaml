@@ -118,7 +118,7 @@ spec:
               value: {{ .Values.config.messaging.queueGroup | quote }}
 
             - name: STORAGESERVICE_NATS_REQUEST_TIMEOUT
-              value: {{ .Values.config.messaging.queueGroup | quote }}
+              value: {{ .Values.config.messaging.requestTimeout | quote }}
               
 
           {{- with .Values.resources }}

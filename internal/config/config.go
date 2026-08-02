@@ -15,7 +15,7 @@ type storageConfiguration struct {
 		StorageTopic string `mapstructure:"storageTopic" envconfig:"STORAGESERVICE_NATS_STORAGETOPIC"`
 		Url          string `mapstructure:"url" envconfig:"STORAGESERVICE_NATS_URL"`
 		QueueGroup   string `mapstructure:"queueGroup" envconfig:"STORAGESERVICE_NATS_QUEUEGROUP"`
-		TimeoutInSec string `mapstructure:"queueGroup" envconfig:"STORAGESERVICE_NATS_REQUEST_TIMEOUT"`
+		TimeoutInSec string `mapstructure:"requestTimeout" envconfig:"STORAGESERVICE_NATS_REQUEST_TIMEOUT"`
 	} `mapstructure:"nats"`
 
 	Crypto struct {
