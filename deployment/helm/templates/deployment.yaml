@@ -64,10 +64,13 @@ spec:
 
           env:
             {{- $podAnnotations := default dict .Values.podAnnotations }}
-            {{- if eq (default "" (index $podAnnotations "inject.xfsc.io/enabled")) "false" }}
+            {{- $injectionEnabled := eq (default "false" (index $podAnnotations "inject.xfsc.io/enabled")) "true" }}
 
-
-            
+            #
+            # Cassandra and NATS are injected when inject.xfsc.io/enabled=true.
+            # Otherwise they are configured explicitly from values.yaml.
+            #
+            {{- if not $injectionEnabled }}
             - name: STORAGESERVICE_CASSANDRA_HOSTS
               value: {{ .Values.config.cassandra.hosts | quote }}
 
@@ -83,6 +86,9 @@ spec:
                   name: {{ .Values.config.cassandra.passwordSecret }}
                   key: {{ .Values.config.cassandra.passwordKey }}
 
+            - name: STORAGESERVICE_NATS_STORAGETOPIC
+              value: {{ .Values.config.messaging.storageTopic | quote }}
+
             - name: STORAGESERVICE_NATS_URL
               value: {{ .Values.config.messaging.url | quote }}
 
@@ -91,7 +97,6 @@ spec:
 
             - name: STORAGESERVICE_NATS_REQUEST_TIMEOUT
               value: {{ .Values.config.messaging.requestTimeout | quote }}
-
             {{- end }}
 
             - name: LISTEN_PORT
@@ -110,23 +115,17 @@ spec:
               value: {{ .Values.config.service.mode | quote }}
 
             #
-            # Crypto Provider gRPC connection
-            #
-            # Both containers run in the same Pod and therefore share
-            # the localhost network namespace.
+            # Crypto Provider gRPC connection.
+            # Both containers share the Pod network namespace.
             #
             - name: STORAGESERVICE_CRYPTO_GRPC_ADDR
-              value: "127.0.0.1:{{ .Values.config.crypto.grpc.port }}"
+              value: {{ .Values.config.engine.clusterAddress | quote }}
 
             - name: STORAGESERVICE_CRYPTO_NAMESPACE
               value: {{ .Values.config.crypto.namespace | quote }}
 
             - name: STORAGESERVICE_CRYPTO_SIGNKEY
               value: {{ .Values.config.crypto.signKey | quote }}
-
-            - name: STORAGESERVICE_NATS_STORAGETOPIC
-              value: {{ .Values.config.messaging.storageTopic | quote }}
-              
 
           {{- with .Values.resources }}
           resources:
@@ -137,12 +136,15 @@ spec:
         # Crypto Provider gRPC sidecar
         #
         - name: crypto-provider
-          image: "{{ .Values.config.crypto.image.repository }}/{{ .Values.config.crypto.image.name }}:{{ .Values.config.crypto.image.tag }}"
-          imagePullPolicy: {{ .Values.config.crypto.image.pullPolicy | default "IfNotPresent" | quote }}
+          image: {{ .Values.config.engine.image | quote }}
+          imagePullPolicy: {{ .Values.config.engine.pullPolicy | default "IfNotPresent" | quote }}
+
+          {{- $grpcAddressParts := splitList ":" .Values.config.engine.address }}
+          {{- $grpcPort := last $grpcAddressParts }}
 
           ports:
             - name: crypto-grpc
-              containerPort: {{ .Values.config.crypto.grpc.port }}
+              containerPort: {{ $grpcPort }}
               protocol: TCP
 
           readinessProbe:
@@ -155,36 +157,23 @@ spec:
             successThreshold: 1
 
           env:
-            - name: GRPC_HOST
-              value: "0.0.0.0"
+            - name: CRYPTO_GRPC_ADDR
+              value: {{ .Values.config.engine.address | quote }}
 
-            - name: GRPC_PORT
-              value: {{ .Values.config.crypto.grpc.port | quote }}
-
-            - name: CRYPTO_PROVIDER_NAMESPACE
-              value: {{ .Values.config.crypto.namespace | quote }}
-
-            {{- with .Values.config.crypto.arguments }}
-            {{- range $name, $value := . }}
+            {{- range $name, $value := .Values.config.engine.env }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- end }}
-            {{- $podAnnotations := default dict .Values.podAnnotations }}
-            {{- if eq (default "" (index $podAnnotations "inject.xfsc.io/enabled")) "false" }}
-            {{- with .Values.config.vault }}
-            - name: VAULT_ADDR
-              value: {{ .address | quote }}
 
-            - name: VAULT_TOKEN
+            {{- range $name, $secret := .Values.config.engine.secretEnv }}
+            - name: {{ $name | quote }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .tokenName }}
-                  key: {{ .tokenKey }}
-            {{- end }}
+                  name: {{ $secret.name }}
+                  key: {{ $secret.key }}
             {{- end }}
 
-          {{- with .Values.config.crypto.resources }}
+          {{- with .Values.config.engine.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
