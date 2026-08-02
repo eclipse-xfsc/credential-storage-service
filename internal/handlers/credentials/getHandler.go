@@ -183,16 +183,18 @@ func loadCredentials(authModel model.AuthModel, env common.Environment, session 
 	}
 
 	var objects map[string]string
-	queryString := fmt.Sprintf(`SELECT %s FROM %s.credentials WHERE accountPartition=? AND 
+	queryString := fmt.Sprintf(`SELECT %s FROM ocm.credentials WHERE accountPartition=? AND 
 																					region=? AND 
 																					country=? AND 
 																					account=? AND 
-																					locked=False;`, object, authModel.TenantId)
+																					tenant=? AND
+																					locked=False;`, object)
 	err := session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account).Consistency(gocql.LocalQuorum).Scan(&objects)
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId).Consistency(gocql.LocalQuorum).Scan(&objects)
 
 	if err != nil && errors.Is(gocql.ErrNotFound, err) {
 		return make(map[string]string), nil

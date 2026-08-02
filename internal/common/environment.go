@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/eclipse-xfsc/credential-storage-service/docs"
-	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/connection"
 	cryptoProvider "github.com/eclipse-xfsc/credential-storage-service/internal/crypto"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -43,14 +42,6 @@ func (e *Environment) GetSession() connection.SessionInterface {
 
 func (e *Environment) GetCryptoProvider() types.CryptoProvider {
 	return cryptoProvider.GetCryptoProvider()
-}
-
-func (e *Environment) GetRegion() string {
-	return config.CurrentStorageConfig.Region
-}
-
-func (e *Environment) GetCountry() string {
-	return config.CurrentStorageConfig.Country
 }
 
 func (e *Environment) GetAccountPartition(account string) string {

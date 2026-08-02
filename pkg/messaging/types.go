@@ -13,5 +13,7 @@ type StorageServiceStoreMessage struct {
 	Type        string `json:"type"`
 	Payload     []byte `json:"payload"`
 	ContentType string `json:"contentType"`
+	Region      string `json:"region"`
+	Country     string `json:"country"`
 	Id          string `json:"id"`
 }

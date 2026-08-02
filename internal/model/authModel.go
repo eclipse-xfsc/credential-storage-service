@@ -14,6 +14,8 @@ const (
 type AuthModel struct {
 	Account        string
 	TenantId       string
+	Region         string
+	Country        string
 	Device_Key     *jwk.Key
 	Nonce          string
 	Recovery_Nonce string

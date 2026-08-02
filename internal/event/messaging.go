@@ -12,7 +12,7 @@ import (
 	"github.com/eclipse-xfsc/credential-storage-service/pkg/messaging"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/eclipse-xfsc/cloud-event-provider"
+	cloudeventprovider "github.com/eclipse-xfsc/cloud-event-provider"
 	logPkg "github.com/eclipse-xfsc/microservice-core-go/pkg/logr"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwe"
@@ -78,6 +78,8 @@ func getType(msg messaging.StorageServiceStoreMessage, env *common.Environment) 
 	authModel := model.AuthModel{
 		Account:  msg.AccountId,
 		TenantId: msg.TenantId,
+		Region:   msg.Region,
+		Country:  msg.Country,
 	}
 
 	presentation := false

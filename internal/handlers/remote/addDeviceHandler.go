@@ -6,7 +6,6 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	crypt "github.com/eclipse-xfsc/credential-storage-service/internal/crypto"
@@ -70,15 +69,17 @@ func checkExist(authModel model.AuthModel, env *common.Environment) (bool, error
 	var account = ""
 	session := env.GetSession()
 
-	queryString := fmt.Sprintf(`SELECT account FROM %s.credentials WHERE accountPartition=? AND 
+	queryString := `SELECT account FROM ocm.credentials WHERE accountPartition=? AND 
 																					region=? AND 
-																					country=? AND 
-																					account=? LIMIT 1;`, authModel.TenantId)
+																					country=? AND
+																					tenant=? AND 
+																					account=? LIMIT 1;`
 
 	query := session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
+		authModel.Region,
+		authModel.Country,
+		authModel.TenantId,
 		authModel.Account)
 
 	err := query.Consistency(gocql.LocalQuorum).Scan(&account)
@@ -130,22 +131,24 @@ func storeRecord(ctx context.Context, authModel model.AuthModel, env *common.Env
 		return nil, err
 	}
 
-	queryString := fmt.Sprintf(`INSERT INTO %s.credentials 
+	queryString := `INSERT INTO ocm.credentials 
 									( accountPartition, 
 									  region, 
 									  country,
 									  account,
+									  tenant,
 									  last_update_timestamp,
 									  recovery_nonce,
 									  device_key,
 									  signature,
-									  locked) VALUES (?, ?, ?, ?, toTimestamp(now()), ?, ? , ? ,False);`, authModel.TenantId)
+									  locked) VALUES (?, ?, ?, ?, toTimestamp(now()), ?, ? , ? ,False);`
 
 	err = session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
+		authModel.Region,
+		authModel.Country,
 		authModel.Account,
+		authModel.TenantId,
 		b64.StdEncoding.EncodeToString(nonce),
 		b64.StdEncoding.EncodeToString(key),
 		b64.StdEncoding.EncodeToString(sig),

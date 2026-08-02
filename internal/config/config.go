@@ -10,8 +10,6 @@ type storageConfiguration struct {
 	Profile              string `mapstructure:"profile" envconfig:"STORAGESERVICE_PROFILE" default:"DEBUG:LOCAL"`
 	Mode                 string `mapstructure:"mode" envconfig:"STORAGESERVICE_MODE" default:"DIRECT"`
 	UnitTestModeOn       bool   `mapstructure:"unitTestModeOn" envconfig:"STORAGESERVICE_UNITTESTMODEON" default:"false"`
-	Country              string `mapstructure:"country" envconfig:"STORAGESERVICE_COUNTRY"`
-	Region               string `mapstructure:"region" envconfig:"STORAGESERVICE_REGION"`
 
 	Messaging struct {
 		Enabled      bool   `mapstructure:"enabled" envconfig:"STORAGESERVICE_MESSAGING_ENABLED" default:"false"`

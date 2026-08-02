@@ -147,7 +147,7 @@ Note: After bootstrapping the docker compose file, the initialize/insert contain
 ## Statements
 ```
 DESCRIBE keyspaces; //you should see tenant_space here
-select * from tenant_space.credentials;
+select * from ocm.credentials;
 ```
 
 

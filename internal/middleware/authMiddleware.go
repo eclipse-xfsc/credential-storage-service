@@ -4,7 +4,6 @@ import (
 	"context"
 	b64 "encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
@@ -26,6 +25,8 @@ const (
 	BearerMissing          = "Bearer missing."
 	TenantIdMissing        = "Tenant Id Missing."
 	AccountIdMissing       = "Account Id Missing."
+	RegionMissing          = "Region Id Missing."
+	CountryMissing         = "Country Id Missing."
 	NonceNotValid          = "Nonce not valid."
 	NonceNotPresent        = "Nonce not present."
 	RouteDataInvald        = "Route data invalid."
@@ -115,16 +116,18 @@ func dbCheckUp(env *common.Environment, authModel *model.AuthModel, context cont
 	session := env.GetSession()
 	logger := env.GetLogger()
 
-	queryString := fmt.Sprintf(`SELECT device_key,locked, nonce, signature, recovery_nonce FROM %s.credentials WHERE accountPartition=? AND 
+	queryString := `SELECT device_key,locked, nonce, signature, recovery_nonce FROM ocm.credentials WHERE accountPartition=? AND 
 																						     region=? AND 
 																						     country=? AND 
-																						     account=? LIMIT 1;`, authModel.TenantId)
+																						     account=? AND
+																							 tenant=? LIMIT 1;`
 
 	query := session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account)
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId)
 
 	err := query.Consistency(gocql.LocalQuorum).Scan(&device_key, &locked, &nonce, &signature, &recovery_nonce)
 

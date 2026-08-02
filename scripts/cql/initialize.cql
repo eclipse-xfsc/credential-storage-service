@@ -1,11 +1,9 @@
--- Create a keyspace
-CREATE KEYSPACE IF NOT EXISTS tenant_space WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
-
 -- Create a table
-CREATE TABLE IF NOT EXISTS tenant_space.credentials (
+CREATE TABLE IF NOT EXISTS ocm.credentials (
 accountPartition text,
 region text,
 country text,
+tenant text,
 account text,
 last_update_timestamp timestamp,
 metadata map<text,text>,
@@ -17,8 +15,8 @@ device_key text,
 nonce text,
 locked boolean,
 signature text,
-PRIMARY KEY ((accountPartition,region,country),account)
+PRIMARY KEY ((accountPartition,region,country,tenant),account)
 );
 
-CREATE INDEX IF NOT EXISTS ON tenant_space.credentials (locked);
-CREATE INDEX IF NOT EXISTS ON tenant_space.credentials (id);
+CREATE INDEX IF NOT EXISTS ON ocm.credentials (locked);
+CREATE INDEX IF NOT EXISTS ON ocm.credentials (id);

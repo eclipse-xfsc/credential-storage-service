@@ -1,4 +1,4 @@
-INSERT INTO tenant_space.credentials  JSON '{
+INSERT INTO ocm.credentials  JSON '{
 "accountPartition": "ABCD",
 "region": "EU",
 "country":"DE",

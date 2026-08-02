@@ -29,19 +29,20 @@ func CreateTransactionReciept(ctx context.Context, authModel model.AuthModel, en
 			return nil
 		}
 
-		queryString := fmt.Sprintf(`UPDATE %s.credentials USING TTL %s SET nonce=? WHERE accountPartition=? AND 
+		queryString := fmt.Sprintf(`UPDATE ocm.credentials USING TTL %s SET nonce=? WHERE accountPartition=? AND 
 																					region=? AND 
 																					country=? AND
-																					account=?;`,
-			authModel.TenantId,
+																					account=? AND
+																					tenant=?;`,
 			strconv.Itoa(5*60))
 
 		err := session.Query(queryString,
 			b64.StdEncoding.EncodeToString([]byte(nonce)),
 			env.GetAccountPartition(authModel.Account),
-			env.GetRegion(),
-			env.GetCountry(),
-			authModel.Account).WithContext(ctx).Exec()
+			authModel.Region,
+			authModel.Country,
+			authModel.Account,
+			authModel.TenantId).WithContext(ctx).Exec()
 
 		if err == nil {
 
