@@ -42,7 +42,9 @@ func init() {
 
 	authEngine = gin.Default()
 
-	tenantGroup := authEngine.Group("/:tenantId")
+	regionGroup := authEngine.Group("/:region")
+	countryGroup := regionGroup.Group("/:country")
+	tenantGroup := countryGroup.Group("/:tenantId")
 	accGroup := tenantGroup.Group("/:account")
 
 	group := accGroup.Group("/test")
@@ -80,7 +82,7 @@ func TestTokenCheckupWithWrongRoute(t *testing.T) {
 	authEnv.SetSession(mockDb)
 	recorder := httptest.NewRecorder()
 
-	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test", nil)
+	request, err := http.NewRequest("GET", "/EU/DE/tenant_space/ABCD123/test", nil)
 
 	if err != nil {
 		t.Error()
@@ -118,7 +120,7 @@ func TestTokenCheckupWithoutToken(t *testing.T) {
 	authEnv.SetSession(mockDb)
 	recorder := httptest.NewRecorder()
 
-	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test2", nil)
+	request, err := http.NewRequest("GET", "/EU/DE/tenant_space/ABCD123/test2", nil)
 
 	if err != nil {
 		t.Error()
@@ -201,7 +203,7 @@ func TestTokenCheckupWithoutToken(t *testing.T) {
 //		t.Error()
 //	}
 //
-//	b, err := CreateToken(k, "/tenant_space/ABCD123/test2", "ABCD123", nonce, true)
+//	b, err := CreateToken(k, "/ABCD123/test2", "ABCD123", nonce, true)
 //	logrus.Info(string(b))
 //	if err != nil {
 //		t.Error()
@@ -209,7 +211,7 @@ func TestTokenCheckupWithoutToken(t *testing.T) {
 //
 //	recorder := httptest.NewRecorder()
 //
-//	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test2", nil)
+//	request, err := http.NewRequest("GET", "/ABCD123/test2", nil)
 //	request.Header.Add("Authorization", "Bearer "+string(b))
 //	if err != nil {
 //		t.Error()
@@ -238,14 +240,14 @@ func TestSelfSignedAuth(t *testing.T) {
 		t.Error()
 	}
 
-	tok, err := CreateSelfSignedToken(jwk, "/tenant_space/ABCD123/test3", "ABCD123")
+	tok, err := CreateSelfSignedToken(jwk, "/EU/DE/tenant_space/ABCD123/test3", "ABCD123")
 
 	if err != nil {
 		t.Error()
 	}
 
 	recorder := httptest.NewRecorder()
-	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test3", nil)
+	request, err := http.NewRequest("GET", "/EU/DE/tenant_space/ABCD123/test3", nil)
 	if err != nil {
 		t.Error()
 	}
@@ -259,7 +261,7 @@ func TestSelfSignedAuth(t *testing.T) {
 
 func TestSelfSignedAuthWithoutBearer(t *testing.T) {
 	recorder := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/tenant_space/ABCD123/test3", nil)
+	request, _ := http.NewRequest("GET", "/EU/DE/tenant_space/ABCD123/test3", nil)
 	request.Header.Add("Content-Type", "application/json")
 	authEngine.ServeHTTP(recorder, request)
 	if recorder.Result().StatusCode != 403 {

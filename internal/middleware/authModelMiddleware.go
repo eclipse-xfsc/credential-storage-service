@@ -40,14 +40,14 @@ func authModelFunc(c *gin.Context, deviceKey *jwk.Key) {
 
 	authModel := createAuthModel(account, tenantId, region, country, deviceKey)
 
-	if tenantId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": TenantIdMissing})
+	if account == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": AccountIdMissing})
 		c.Abort()
 		return
 	}
 
-	if account == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": AccountIdMissing})
+	if tenantId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": TenantIdMissing})
 		c.Abort()
 		return
 	}

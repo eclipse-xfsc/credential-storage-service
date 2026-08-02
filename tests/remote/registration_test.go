@@ -56,11 +56,13 @@ func TestAddNewDevice(t *testing.T) {
 	authModel := model.AuthModel{
 		Account:    "ABCD123",
 		TenantId:   "tenant_space",
+		Region:     "EU",
+		Country:    "DE",
 		Device_Key: &pub,
 	}
 
 	recorder := httptest.NewRecorder()
-	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test/register", nil)
+	request, err := http.NewRequest("GET", "/ABCD123/test/register", nil)
 	request.Header.Add("Content-Type", "application/json")
 	request = request.WithContext(context.WithValue(request.Context(), model.AuthModelKey, authModel))
 	if err != nil {
@@ -92,11 +94,13 @@ func TestGetSession(t *testing.T) {
 	authModel := model.AuthModel{
 		Account:    "ABCD123",
 		TenantId:   "tenant_space",
+		Region:     "EU",
+		Country:    "DE",
 		Device_Key: &pub,
 	}
 
 	recorder := httptest.NewRecorder()
-	request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test2/session", nil)
+	request, err := http.NewRequest("GET", "/ABCD123/test2/session", nil)
 	request.Header.Add("Content-Type", "application/json")
 	request = request.WithContext(context.WithValue(request.Context(), model.AuthModelKey, authModel))
 	if err != nil {

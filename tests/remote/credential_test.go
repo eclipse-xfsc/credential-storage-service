@@ -52,10 +52,12 @@ func init() {
 	}
 
 	credentialEngine = gin.Default()
-	tenantGroup := credentialEngine.Group("/:tenantId")
-	accountGroup := tenantGroup.Group("/:account")
+	regionGroup := credentialEngine.Group("/:region")
+	countryGroup := regionGroup.Group("/:country")
+	tenantGroup := countryGroup.Group("/:tenantId")
+	accGroup := tenantGroup.Group("/:account")
 
-	group := accountGroup.Group("/test")
+	group := accGroup.Group("/test")
 	group.Use(middleware.AuthTestModel(&deviceKey))
 	credentialEnv.SetContentType("application/jose")
 	api.AddCredentialRoutes(group, credentialEnv)
@@ -104,7 +106,7 @@ func TestAddCredentialNoBody(t *testing.T) {
 	common.WithTestEnvironment(credentialEnv, func() {
 		credentialEnv.SetContentType("application/jose")
 		recorder := httptest.NewRecorder()
-		request, err := http.NewRequest("PUT", "/tenant_space/ABCD123/test/123", nil)
+		request, err := http.NewRequest("PUT", "/EU/DE/tenant_space/ABCD123/test/123", nil)
 		request.Header.Add("Content-Type", "application/jose")
 		if err != nil {
 			t.Error()
@@ -135,7 +137,7 @@ func TestWrongContentType(t *testing.T) {
 	common.WithTestEnvironment(credentialEnv, func() {
 
 		recorder := httptest.NewRecorder()
-		request, err := http.NewRequest("PUT", "/tenant_space/ABCD123/test/123", nil)
+		request, err := http.NewRequest("PUT", "/EU/DE/tenant_space/ABCD123/test/123", nil)
 		request.Header.Add("Content-Type", "application/json")
 		if err != nil {
 			t.Error()
@@ -174,7 +176,7 @@ func TestWrongContentType(t *testing.T) {
 //	}
 //	recorder := httptest.NewRecorder()
 //
-//	request, err := http.NewRequest("PUT", "/tenant_space/ABCD123/test/123", bytes.NewReader(encrypted))
+//	request, err := http.NewRequest("PUT", "/ABCD123/test/123", bytes.NewReader(encrypted))
 //	request.Header.Add("Content-Type", "application/jose")
 //
 //	if err != nil {
@@ -225,7 +227,7 @@ func TestAddCredential(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	request, err := http.NewRequest("PUT", "/tenant_space/ABCD123/test/123", bytes.NewReader(encrypted))
+	request, err := http.NewRequest("PUT", "/EU/DE/tenant_space/ABCD123/test/123", bytes.NewReader(encrypted))
 	request.Header.Add("Content-Type", "application/jose")
 	if err != nil {
 		t.Error()
@@ -290,7 +292,7 @@ func TestGetCredential(t *testing.T) {
 
 		recorder := httptest.NewRecorder()
 
-		request, err := http.NewRequest("GET", "/tenant_space/ABCD123/test", nil)
+		request, err := http.NewRequest("GET", "/EU/DE/tenant_space/ABCD123/test", nil)
 		request.Header.Add("Content-Type", "application/jose")
 		if err != nil {
 			t.Error()
@@ -340,7 +342,7 @@ func TestDeleteCredential(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	request, err := http.NewRequest("DELETE", "/tenant_space/ABCD123/test/123", nil)
+	request, err := http.NewRequest("DELETE", "/EU/DE/tenant_space/ABCD123/test/123", nil)
 	if err != nil {
 		t.Error()
 	}

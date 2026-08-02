@@ -170,7 +170,7 @@ All records are <b>signed</b> during insertion which ensures that records can't 
 #### Retrieve credentials
 
 ```bash
-cqlsh <cassandra host> <cassandra port> -u <cassandra user> -p <cassandra password> -e "SELECT * FROM tenant_space.credentials;"
+cqlsh <cassandra host> <cassandra port> -u <cassandra user> -p <cassandra password> -e "SELECT * FROM ocm.credentials;"
 
 ```
 
