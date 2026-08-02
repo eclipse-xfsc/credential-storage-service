@@ -25,7 +25,7 @@ type storageConfiguration struct {
 	} `mapstructure:"crypto"`
 
 	Cassandra struct {
-		Host     string `mapstructure:"host" envconfig:"STORAGESERVICE_CASSANDRA_HOST"`
+		Host     string `mapstructure:"host" envconfig:"STORAGESERVICE_CASSANDRA_HOSTS"`
 		KeySpace string `mapstructure:"keyspace" envconfig:"STORAGESERVICE_CASSANDRA_KEYSPACE"`
 		User     string `mapstructure:"user, omitempty" envconfig:"STORAGESERVICE_CASSANDRA_USER"`
 		Password string `mapstructure:"password, omitempty" envconfig:"STORAGESERVICE_CASSANDRA_PASSWORD"`

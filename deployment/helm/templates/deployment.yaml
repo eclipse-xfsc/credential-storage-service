@@ -63,7 +63,12 @@ spec:
           {{- end }}
 
           env:
-            - name: STORAGESERVICE_CASSANDRA_HOST
+            {{- $podAnnotations := default dict .Values.podAnnotations }}
+            {{- if eq (default "" (index $podAnnotations "inject.xfsc.io/enabled")) "false" }}
+
+
+            
+            - name: STORAGESERVICE_CASSANDRA_HOSTS
               value: {{ .Values.config.cassandra.hosts | quote }}
 
             - name: STORAGESERVICE_CASSANDRA_USER
@@ -77,6 +82,17 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.config.cassandra.passwordSecret }}
                   key: {{ .Values.config.cassandra.passwordKey }}
+
+            - name: STORAGESERVICE_NATS_URL
+              value: {{ .Values.config.messaging.url | quote }}
+
+            - name: STORAGESERVICE_NATS_QUEUEGROUP
+              value: {{ .Values.config.messaging.queueGroup | quote }}
+
+            - name: STORAGESERVICE_NATS_REQUEST_TIMEOUT
+              value: {{ .Values.config.messaging.requestTimeout | quote }}
+
+            {{- end }}
 
             - name: LISTEN_PORT
               value: {{ .Values.server.http.port | quote }}
@@ -110,15 +126,6 @@ spec:
 
             - name: STORAGESERVICE_NATS_STORAGETOPIC
               value: {{ .Values.config.messaging.storageTopic | quote }}
-
-            - name: STORAGESERVICE_NATS_URL
-              value: {{ .Values.config.messaging.url | quote }}
-
-            - name: STORAGESERVICE_NATS_QUEUEGROUP
-              value: {{ .Values.config.messaging.queueGroup | quote }}
-
-            - name: STORAGESERVICE_NATS_REQUEST_TIMEOUT
-              value: {{ .Values.config.messaging.requestTimeout | quote }}
               
 
           {{- with .Values.resources }}
@@ -163,7 +170,8 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
-
+            {{- $podAnnotations := default dict .Values.podAnnotations }}
+            {{- if eq (default "" (index $podAnnotations "inject.xfsc.io/enabled")) "false" }}
             {{- with .Values.config.vault }}
             - name: VAULT_ADDR
               value: {{ .address | quote }}
@@ -173,6 +181,7 @@ spec:
                 secretKeyRef:
                   name: {{ .tokenName }}
                   key: {{ .tokenKey }}
+            {{- end }}
             {{- end }}
 
           {{- with .Values.config.crypto.resources }}

@@ -1,0 +1,20 @@
+{{- $secretName := printf "%s-cassandra-credentials" .Release.Name -}}
+{{- if eq (index .Values.podAnnotations "inject.xfsc.io/enabled") "true" }}
+apiVersion: resources.xfsc.io/v1alpha1
+kind: ResourceClaim
+metadata:
+  name: my-cassandra
+  namespace: ocm-wstack
+spec:
+  type: cassandra
+
+  providerRef:
+    name: cassandra
+
+  secretRef:
+    name: {{ $secretName }}
+
+  parameters:
+    replicationFactor: 1
+    durableWrites: true
+{{- end }}
