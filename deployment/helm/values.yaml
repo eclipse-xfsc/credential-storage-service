@@ -12,6 +12,14 @@ podAnnotations:
     inject.xfsc.io/needs: "nats,cassandra"
     inject.xfsc.io/env-prefix: "STORAGE" 
 
+resourceProvider:
+  enabled: true
+  name: ""
+  scope: Cluster
+  description: Storage Service
+  allow:
+    namespaces: []
+
 resources:
   # requests:
   #   cpu: 25m
