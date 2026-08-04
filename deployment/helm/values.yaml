@@ -10,7 +10,7 @@ image:
 podAnnotations:
     inject.xfsc.io/enabled: "false"
     inject.xfsc.io/needs: "nats,cassandra"
-    inject.xfsc.io/env-prefix: "STORAGE" 
+    inject.xfsc.io/env-prefix: "STORAGESERVICE" 
 
 resourceProvider:
   enabled: true
