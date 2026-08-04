@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
@@ -30,31 +31,32 @@ var storagemessaging = new(StorageMessaging)
 func StartCloudEvents() error {
 	log.Info("start messaging!")
 
-	dur, err := time.ParseDuration(config.CurrentStorageConfig.Nats.TimeoutInSec)
+	if config.CurrentStorageConfig.Nats.StorageTopic == "" {
+		return fmt.Errorf("nats storage topic is empty")
+	}
 
+	dur, err := time.ParseDuration(config.CurrentStorageConfig.Nats.TimeoutInSec)
 	if err != nil {
 		return err
 	}
 
-	client, err := cloudeventprovider.New(cloudeventprovider.Config{
-		Protocol: cloudeventprovider.ProtocolTypeNats,
-		Settings: cloudeventprovider.NatsConfig{
-			Url:          config.CurrentStorageConfig.Nats.Url,
-			QueueGroup:   config.CurrentStorageConfig.Nats.QueueGroup,
-			TimeoutInSec: dur,
+	client, err := cloudeventprovider.New(
+		cloudeventprovider.Config{
+			Protocol: cloudeventprovider.ProtocolTypeNats,
+			Settings: cloudeventprovider.NatsConfig{
+				Url:          config.CurrentStorageConfig.Nats.Url,
+				QueueGroup:   config.CurrentStorageConfig.Nats.QueueGroup,
+				TimeoutInSec: dur,
+			},
 		},
-	}, cloudeventprovider.ConnectionTypeSub, config.CurrentStorageConfig.Nats.StorageTopic)
+		cloudeventprovider.ConnectionTypeSub,
+		config.CurrentStorageConfig.Nats.StorageTopic,
+	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	storagemessaging.client = client
-
-	/*defer func() {
-		if err := client.Close(); err != nil {
-			log.Error(err)
-		}
-	}()*/
 
 	go storagemessaging.listen()
 
@@ -64,7 +66,7 @@ func StartCloudEvents() error {
 func (s *StorageMessaging) listen() {
 	for {
 		if err := s.client.SubCtx(context.Background(), handler); err != nil {
-			s.logger.Error(err, "error retrieving message")
+			log.Error(err, "error retrieving message")
 		}
 	}
 }

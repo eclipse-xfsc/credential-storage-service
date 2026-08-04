@@ -86,9 +86,6 @@ spec:
                   name: {{ .Values.config.cassandra.passwordSecret }}
                   key: {{ .Values.config.cassandra.passwordKey }}
 
-            - name: STORAGESERVICE_NATS_STORAGETOPIC
-              value: {{ .Values.config.messaging.storageTopic | quote }}
-
             - name: STORAGESERVICE_NATS_URL
               value: {{ .Values.config.messaging.url | quote }}
 
@@ -113,6 +110,10 @@ spec:
                   key: password
 
              {{- end }}
+
+            - name: STORAGESERVICE_NATS_STORAGETOPIC
+              value: {{ .Values.config.messaging.storageTopic | quote }}
+
 
             - name: LISTEN_PORT
               value: {{ .Values.server.http.port | quote }}
