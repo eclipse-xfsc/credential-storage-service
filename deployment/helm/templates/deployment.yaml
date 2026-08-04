@@ -99,6 +99,21 @@ spec:
               value: {{ .Values.config.messaging.requestTimeout | quote }}
             {{- end }}
 
+            {{- if $injectionEnabled  }}
+            - name: STORAGESERVICE_CASSANDRA_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-cassandra-credentials" .Release.Name | quote }}
+                  key: username
+
+            - name: STORAGESERVICE_CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-cassandra-credentials" .Release.Name | quote }}
+                  key: password
+
+             {{- end }}
+
             - name: LISTEN_PORT
               value: {{ .Values.server.http.port | quote }}
 
