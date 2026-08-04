@@ -3,7 +3,7 @@
 apiVersion: resources.xfsc.io/v1alpha1
 kind: ResourceClaim
 metadata:
-  name: cassandra
+  name: {{ printf "%s-cassandra-resource-claim" .Release.Name | quote }}
   namespace: ocm-wstack
 spec:
   type: cassandra
