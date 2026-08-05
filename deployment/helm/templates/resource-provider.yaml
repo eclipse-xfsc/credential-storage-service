@@ -14,5 +14,5 @@ spec:
 {{- end }}
   outputs:
     env:
-      NATS_STORAGETOPIC: {{ .Values.config.messaging.storageTopic }}    
+      STORAGE_TOPIC: {{ .Values.config.messaging.storageTopic }}    
 {{- end }}
