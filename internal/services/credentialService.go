@@ -23,7 +23,7 @@ func StoreMessage(ctx context.Context,
 	session := env.GetSession()
 
 	if env.GetContentType() == common.EncryptedContentType {
-		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), common.StorageCryptoContext, msg, ctx, env.GetCryptoProvider())
+		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), env.GetCryptoGroup(), msg, ctx, env.GetCryptoProvider())
 		if err == nil && cipher != nil {
 
 			receipt := handlers.CreateTransactionReciept(ctx, authModel, env)
@@ -41,7 +41,7 @@ func StoreMessage(ctx context.Context,
 	}
 
 	if env.GetContentType() == common.NormalContentType {
-		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), common.StorageCryptoContext, msg, ctx, env.GetCryptoProvider())
+		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), env.GetCryptoGroup(), msg, ctx, env.GetCryptoProvider())
 		if err != nil {
 			logrus.Error(err.Error())
 			return nil, err

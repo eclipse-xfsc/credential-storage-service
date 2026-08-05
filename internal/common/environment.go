@@ -20,6 +20,7 @@ type Environment struct {
 	logger          logPkg.Logger
 	isHealthy       bool
 	cryptoProvider  types.CryptoProvider
+	cryptoGroup     string
 }
 
 var env *Environment
@@ -30,6 +31,14 @@ func init() {
 
 func GetEnvironment() *Environment {
 	return env
+}
+
+func (e *Environment) SetCryptoGroup(group string) {
+	e.cryptoGroup = group
+}
+
+func (e *Environment) GetCryptoGroup() string {
+	return e.cryptoGroup
 }
 
 func (e *Environment) SetSession(session connection.SessionInterface) {

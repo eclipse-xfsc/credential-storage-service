@@ -108,7 +108,7 @@ func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.
 			for k, v := range credentials {
 				cipher, err := b64.RawStdEncoding.DecodeString(v)
 				if err == nil {
-					msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), common.StorageCryptoContext, ctx, env.GetCryptoProvider())
+					msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), env.GetCryptoGroup(), ctx, env.GetCryptoProvider())
 
 					if err != nil {
 						logger.Error(err, "")
@@ -147,7 +147,7 @@ func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.
 		for k, v := range credentials {
 			cipher, err := b64.RawStdEncoding.DecodeString(v)
 			if err == nil {
-				msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), common.StorageCryptoContext, ctx, env.GetCryptoProvider())
+				msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), env.GetCryptoGroup(), ctx, env.GetCryptoProvider())
 
 				if err != nil {
 					logger.Error(err, "")

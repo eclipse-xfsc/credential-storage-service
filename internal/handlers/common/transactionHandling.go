@@ -14,7 +14,7 @@ import (
 
 func CreateTransactionReciept(ctx context.Context, authModel model.AuthModel, env *common.Environment) *model.Receipt {
 	log := env.GetLogger()
-	nonce, err := crypto.GenerateNonce(env.GetCryptoNamespace(), common.StorageCryptoContext, ctx, env.GetCryptoProvider())
+	nonce, err := crypto.GenerateNonce(env.GetCryptoNamespace(), env.GetCryptoGroup(), ctx, env.GetCryptoProvider())
 
 	if err == nil {
 		expire := time.Now().Add(time.Minute * 5)

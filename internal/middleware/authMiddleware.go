@@ -153,7 +153,7 @@ func dbCheckUp(env *common.Environment, authModel *model.AuthModel, context cont
 			CryptoContext: types.CryptoContext{
 				Namespace: env.GetCryptoNamespace(),
 				Context:   context,
-				Group:     common.StorageCryptoContext,
+				Group:     env.GetCryptoGroup(),
 			},
 		}, jwkJson, sig)
 

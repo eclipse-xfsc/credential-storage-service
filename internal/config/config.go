@@ -21,6 +21,7 @@ type storageConfiguration struct {
 	Crypto struct {
 		Namespace string `mapstructure:"namespace" envconfig:"STORAGESERVICE_CRYPTO_NAMESPACE"`
 		SignKey   string `mapstructure:"signKey" envconfig:"STORAGESERVICE_CRYPTO_SIGNKEY"`
+		Group     string `mapstructure:"group" envconfig:"STORAGESERVICE_CRYPTO_GROUP"`
 		GrpcAddr  string `mapstructure:"grpcAddr" envconfig:"STORAGESERVICE_CRYPTO_GRPC_ADDR" default:"crypto-provider:50051"`
 	} `mapstructure:"crypto"`
 

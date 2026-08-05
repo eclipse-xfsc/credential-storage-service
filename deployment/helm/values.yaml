@@ -73,6 +73,7 @@ config:
   crypto:
     signKey: storage
     namespace: ocm-wstack
+    group: transit
   engine:
     clusterAddress: 127.0.0.1:50051
     image: node-654e3bca7fbeeed18f81d7c7.ps-xaas.io/tsa/crypto-provider-hashicorp-vault-plugin:2.0.6

@@ -95,7 +95,7 @@ func checkExist(authModel model.AuthModel, env *common.Environment) (bool, error
 func createBasicStructure(ctx context.Context, key *jwk.Key, env *common.Environment) ([]byte, []byte, []byte, error) {
 	logger := env.GetLogger()
 
-	nonce, err := env.GetCryptoProvider().GenerateRandom(types.CryptoContext{Namespace: env.GetCryptoNamespace(), Context: ctx, Group: common.StorageCryptoContext}, 64)
+	nonce, err := env.GetCryptoProvider().GenerateRandom(types.CryptoContext{Namespace: env.GetCryptoNamespace(), Context: ctx, Group: env.GetCryptoGroup()}, 64)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -108,7 +108,7 @@ func createBasicStructure(ctx context.Context, key *jwk.Key, env *common.Environ
 		CryptoContext: types.CryptoContext{
 			Namespace: env.GetCryptoNamespace(),
 			Context:   ctx,
-			Group:     common.StorageCryptoContext,
+			Group:     env.GetCryptoGroup(),
 		},
 	}, dk.Bytes())
 

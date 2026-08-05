@@ -143,6 +143,9 @@ spec:
             - name: STORAGESERVICE_CRYPTO_SIGNKEY
               value: {{ .Values.config.crypto.signKey | quote }}
 
+            - name: STORAGESERVICE_CRYPTO_GROUP
+              value: {{ .Values.config.crypto.group | quote }}
+
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

@@ -72,7 +72,7 @@ func init() {
 			CryptoContext: types.CryptoContext{
 				Namespace: credentialEnv.GetCryptoNamespace(),
 				Context:   context.Background(),
-				Group:     common.StorageCryptoContext,
+				Group:     credentialEnv.GetCryptoGroup(),
 			},
 		},
 		KeyType: types.Aes256GCM,

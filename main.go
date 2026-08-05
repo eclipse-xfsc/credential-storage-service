@@ -46,6 +46,7 @@ func init() {
 	env.SetMode(currentConf.Mode)
 	env.SetUnitTestModeOn(currentConf.UnitTestModeOn)
 	env.SetHealthy(true)
+	env.SetCryptoGroup(currentConf.Crypto.Group)
 }
 
 func startDbConnection() error {
@@ -140,7 +141,7 @@ func initializeCrypto() (error, func()) {
 	ctx := types.CryptoContext{
 		Namespace: env.GetCryptoNamespace(),
 		Context:   context.Background(),
-		Group:     common.StorageCryptoContext,
+		Group:     env.GetCryptoGroup(),
 		Engine:    "transit",
 	}
 
