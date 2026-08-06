@@ -68,20 +68,6 @@ services:
         };
 
         USE ocm;
-
-        CREATE TABLE IF NOT EXISTS credentials (
-          account_partition text,
-          region text,
-          country text,
-          account text,
-          tenant_id text,
-          objects map<text, text>,
-          PRIMARY KEY (
-            (account_partition, region, country),
-            account,
-            tenant_id
-          )
-        );
         CQL
 
         echo "Cassandra initialization completed."

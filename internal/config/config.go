@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	configPkg "github.com/eclipse-xfsc/microservice-core-go/pkg/config"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -31,6 +33,12 @@ type storageConfiguration struct {
 		User     string `mapstructure:"user, omitempty" envconfig:"STORAGESERVICE_CASSANDRA_USER"`
 		Password string `mapstructure:"password, omitempty" envconfig:"STORAGESERVICE_CASSANDRA_PASSWORD"`
 	} `mapstructure:"cassandra"`
+
+	Migrations struct {
+		Enabled bool          `mapstructure:"enabled" envconfig:"STORAGESERVICE_MIGRATIONS_ENABLED" default:"true"`
+		Table   string        `mapstructure:"table" envconfig:"STORAGESERVICE_MIGRATIONS_TABLE" default:"schema_migrations"`
+		Timeout time.Duration `mapstructure:"timeout" envconfig:"STORAGESERVICE_MIGRATIONS_TIMEOUT" default:"2m"`
+	} `mapstructure:"migrations"`
 }
 
 var CurrentStorageConfig storageConfiguration

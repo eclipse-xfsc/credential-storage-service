@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"os"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/api"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/connection"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/middleware"
+	"github.com/eclipse-xfsc/credential-storage-service/internal/migration"
 	core "github.com/eclipse-xfsc/crypto-provider-core/v2"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"os"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/event"
@@ -198,6 +200,19 @@ func main() {
 
 	if err := startDbConnection(); err != nil {
 		return
+	}
+
+	migrationTimeout := config.CurrentStorageConfig.Migrations.Timeout
+	if migrationTimeout <= 0 {
+		migrationTimeout = 2 * time.Minute
+	}
+	if err := migration.Run(context.Background(), env.GetSession(), migration.Config{
+		Enabled: config.CurrentStorageConfig.Migrations.Enabled,
+		Table:   config.CurrentStorageConfig.Migrations.Table,
+		Timeout: migrationTimeout,
+	}); err != nil {
+		logger.Error(err, "Failed applying Cassandra migrations")
+		os.Exit(1)
 	}
 
 	if err := event.StartCloudEvents(); err != nil {
