@@ -6,13 +6,12 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	crypt "github.com/eclipse-xfsc/credential-storage-service/internal/crypto"
 	handlers "github.com/eclipse-xfsc/credential-storage-service/internal/handlers/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/model"
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -70,15 +69,17 @@ func checkExist(authModel model.AuthModel, env *common.Environment) (bool, error
 	var account = ""
 	session := env.GetSession()
 
-	queryString := fmt.Sprintf(`SELECT account FROM %s.credentials WHERE accountPartition=? AND 
+	queryString := `SELECT account FROM ocm.credentials WHERE accountPartition=? AND 
 																					region=? AND 
-																					country=? AND 
-																					account=? LIMIT 1;`, authModel.TenantId)
+																					country=? AND
+																					tenant=? AND 
+																					account=? LIMIT 1;`
 
 	query := session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
+		authModel.Region,
+		authModel.Country,
+		authModel.TenantId,
 		authModel.Account)
 
 	err := query.Consistency(gocql.LocalQuorum).Scan(&account)
@@ -94,7 +95,7 @@ func checkExist(authModel model.AuthModel, env *common.Environment) (bool, error
 func createBasicStructure(ctx context.Context, key *jwk.Key, env *common.Environment) ([]byte, []byte, []byte, error) {
 	logger := env.GetLogger()
 
-	nonce, err := env.GetCryptoProvider().GenerateRandom(types.CryptoContext{Namespace: env.GetCryptoNamespace(), Context: ctx, Group: common.StorageCryptoContext}, 64)
+	nonce, err := env.GetCryptoProvider().GenerateRandom(types.CryptoContext{Namespace: env.GetCryptoNamespace(), Context: ctx, Group: env.GetCryptoGroup()}, 64)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -107,7 +108,7 @@ func createBasicStructure(ctx context.Context, key *jwk.Key, env *common.Environ
 		CryptoContext: types.CryptoContext{
 			Namespace: env.GetCryptoNamespace(),
 			Context:   ctx,
-			Group:     common.StorageCryptoContext,
+			Group:     env.GetCryptoGroup(),
 		},
 	}, dk.Bytes())
 
@@ -130,22 +131,24 @@ func storeRecord(ctx context.Context, authModel model.AuthModel, env *common.Env
 		return nil, err
 	}
 
-	queryString := fmt.Sprintf(`INSERT INTO %s.credentials 
+	queryString := `INSERT INTO ocm.credentials 
 									( accountPartition, 
 									  region, 
 									  country,
 									  account,
+									  tenant,
 									  last_update_timestamp,
 									  recovery_nonce,
 									  device_key,
 									  signature,
-									  locked) VALUES (?, ?, ?, ?, toTimestamp(now()), ?, ? , ? ,False);`, authModel.TenantId)
+									  locked) VALUES (?, ?, ?, ?, toTimestamp(now()), ?, ? , ? ,False);`
 
 	err = session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
+		authModel.Region,
+		authModel.Country,
 		authModel.Account,
+		authModel.TenantId,
 		b64.StdEncoding.EncodeToString(nonce),
 		b64.StdEncoding.EncodeToString(key),
 		b64.StdEncoding.EncodeToString(sig),

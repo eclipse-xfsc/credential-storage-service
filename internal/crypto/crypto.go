@@ -7,31 +7,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
-	"github.com/eclipse-xfsc/ssi-jwt"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
+	jwt "github.com/eclipse-xfsc/ssi-jwt/v2"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwe"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 )
-
-var cProvider types.CryptoProvider
-
-func GetCryptoProvider() types.CryptoProvider {
-	return cProvider
-}
-
-/*
-	Usage: Creates an Crypto Provider
-*/
-
-func CreateCryptoProvider(unitTestMode bool, stdCryptoProvider types.CryptoProvider) {
-	if unitTestMode {
-		logrus.Info("unitTestMode crypto provider is used")
-		cProvider = new(TestProvider)
-	} else {
-		cProvider = stdCryptoProvider
-	}
-}
 
 /*
 	Usage: Encrypts JWE messages before they are going out to storage.
@@ -102,8 +83,8 @@ func DecryptMessage(id string, cipher []byte, namespace string, group string, ct
 	}
 }
 
-func GenerateNonce(namespace string, group string, ctx context.Context) ([]byte, error) {
-	return cProvider.GenerateRandom(
+func GenerateNonce(namespace string, group string, ctx context.Context, provider types.CryptoProvider) ([]byte, error) {
+	return provider.GenerateRandom(
 		types.CryptoContext{Namespace: namespace, Context: ctx, Group: group}, 32)
 }
 

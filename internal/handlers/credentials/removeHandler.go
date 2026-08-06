@@ -62,16 +62,18 @@ func removeCredential(ctx context.Context, id string, authModel model.AuthModel,
 
 	session := env.GetSession()
 
-	queryString := fmt.Sprintf(`DELETE %s[?] FROM %s.credentials  WHERE accountPartition=? AND
+	queryString := fmt.Sprintf(`DELETE %s[?] FROM ocm.credentials  WHERE accountPartition=? AND
 																						   region=? AND 
 																						   country=? AND 
-																						   account=?;`, object, authModel.TenantId)
+																						   account=? AND
+																						   tenant=?;`, object)
 	err := session.Query(queryString,
 		id,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account).Consistency(gocql.LocalQuorum).WithContext(ctx).Exec()
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId).Consistency(gocql.LocalQuorum).WithContext(ctx).Exec()
 
 	if err != nil {
 		return errors.New(deleteCredentialError)

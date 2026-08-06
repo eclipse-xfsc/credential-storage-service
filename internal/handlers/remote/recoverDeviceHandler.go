@@ -5,7 +5,6 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	handlers "github.com/eclipse-xfsc/credential-storage-service/internal/handlers/common"
@@ -78,23 +77,25 @@ func updateRecord(ctx context.Context, authModel model.AuthModel, key *jwk.Key, 
 		return nil, err
 	}
 
-	queryString := fmt.Sprintf(`UPDATE %s.credentials SET device_key=?,
+	queryString := `UPDATE ocm.credentials SET device_key=?,
 															  signature=?, 
 															  recovery_nonce=?,
 															  last_update_timestamp=toTimestamp(now()) WHERE 
 																  		  accountPartition=? AND 
 																					region=? AND 
 																					country=? AND
-																					account=?;`, authModel.TenantId)
+																					account=? AND
+																					tenant=?;`
 
 	err2 := session.Query(queryString,
 		b64.StdEncoding.EncodeToString(newKey),
 		b64.StdEncoding.EncodeToString(sig),
 		b64.StdEncoding.EncodeToString(nonce),
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account).WithContext(ctx).Exec()
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId).WithContext(ctx).Exec()
 
 	if err2 != nil {
 		logger.Error(err2, "")

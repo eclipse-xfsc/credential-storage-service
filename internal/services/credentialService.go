@@ -23,7 +23,7 @@ func StoreMessage(ctx context.Context,
 	session := env.GetSession()
 
 	if env.GetContentType() == common.EncryptedContentType {
-		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), common.StorageCryptoContext, msg, ctx, env.GetCryptoProvider())
+		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), env.GetCryptoGroup(), msg, ctx, env.GetCryptoProvider())
 		if err == nil && cipher != nil {
 
 			receipt := handlers.CreateTransactionReciept(ctx, authModel, env)
@@ -41,7 +41,7 @@ func StoreMessage(ctx context.Context,
 	}
 
 	if env.GetContentType() == common.NormalContentType {
-		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), common.StorageCryptoContext, msg, ctx, env.GetCryptoProvider())
+		cipher, err := crypto.EncryptMessage(authModel.Account, env.GetCryptoNamespace(), env.GetCryptoGroup(), msg, ctx, env.GetCryptoProvider())
 		if err != nil {
 			logrus.Error(err.Error())
 			return nil, err
@@ -68,17 +68,19 @@ func executeStoring(id string, ctx context.Context, msg []byte, session connecti
 		object = "presentations"
 	}
 
-	queryString := fmt.Sprintf(`UPDATE %s.credentials SET %s[?] = ?, locked=False, last_update_timestamp=toTimestamp(now()) WHERE 
+	queryString := fmt.Sprintf(`UPDATE ocm.credentials SET %s[?] = ?, locked=False, last_update_timestamp=toTimestamp(now()) WHERE 
 																  		  accountPartition=? AND 
 																					region=? AND 
 																					country=? AND
-																					account=?;`, authModel.TenantId, object)
+																					account=? AND
+																					tenant=?;`, object)
 
 	return session.Query(queryString,
 		id,
 		b64.RawStdEncoding.EncodeToString(msg),
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account).WithContext(ctx).Exec()
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId).WithContext(ctx).Exec()
 }

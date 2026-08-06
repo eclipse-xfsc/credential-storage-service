@@ -4,8 +4,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 h1:NMZiJj8QnKe1LgsbDayM4UoHwbvwDRwnI3hwNaAHRnc=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0/go.mod h1:ZXNYxsqcloTdSy/rNShjYzMhyjf0LaoftYK0p+A3h40=
-github.com/eclipse-xfsc/crypto-provider-core v1.4.1-goarchv1230 h1:XGRabbKHbat+Tv42GGFuC6ksbSLcGVV42p771xvc3xk=
-github.com/eclipse-xfsc/crypto-provider-core v1.4.1-goarchv1230/go.mod h1:MOlowZhLHQnBDqfiPqgulPTk79/lAiSTO70MZUNqLCg=
+github.com/eclipse-xfsc/crypto-provider-core/v2 v1.4.1-goarchv1230 h1:XGRabbKHbat+Tv42GGFuC6ksbSLcGVV42p771xvc3xk=
+github.com/eclipse-xfsc/crypto-provider-core/v2 v1.4.1-goarchv1230/go.mod h1:MOlowZhLHQnBDqfiPqgulPTk79/lAiSTO70MZUNqLCg=
 github.com/eclipse-xfsc/did-core v1.0.2-goarchv1230 h1:mCdNELG6vBXsUUVmU9cJDUldwhbu5TYH9KxxM+0IKgs=
 github.com/eclipse-xfsc/did-core v1.0.2-goarchv1230/go.mod h1:r8MqfgiDmYvGNiAHwQcDmLcn/4MM4XIW9ZhZTZX/fAs=
 github.com/eclipse-xfsc/ssi-jwt v1.2.1-goarchv1230 h1:l6VlBk+R6cdiluTMal7lhUzgW0JaFoC0ODJG0R/ig1w=

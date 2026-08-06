@@ -108,7 +108,7 @@ func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.
 			for k, v := range credentials {
 				cipher, err := b64.RawStdEncoding.DecodeString(v)
 				if err == nil {
-					msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), common.StorageCryptoContext, ctx, env.GetCryptoProvider())
+					msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), env.GetCryptoGroup(), ctx, env.GetCryptoProvider())
 
 					if err != nil {
 						logger.Error(err, "")
@@ -147,7 +147,7 @@ func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.
 		for k, v := range credentials {
 			cipher, err := b64.RawStdEncoding.DecodeString(v)
 			if err == nil {
-				msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), common.StorageCryptoContext, ctx, env.GetCryptoProvider())
+				msg, err := crypto.DecryptMessage(authModel.Account, cipher, env.GetCryptoNamespace(), env.GetCryptoGroup(), ctx, env.GetCryptoProvider())
 
 				if err != nil {
 					logger.Error(err, "")
@@ -183,16 +183,18 @@ func loadCredentials(authModel model.AuthModel, env common.Environment, session 
 	}
 
 	var objects map[string]string
-	queryString := fmt.Sprintf(`SELECT %s FROM %s.credentials WHERE accountPartition=? AND 
+	queryString := fmt.Sprintf(`SELECT %s FROM ocm.credentials WHERE accountPartition=? AND 
 																					region=? AND 
 																					country=? AND 
 																					account=? AND 
-																					locked=False;`, object, authModel.TenantId)
+																					tenant=? AND
+																					locked=False;`, object)
 	err := session.Query(queryString,
 		env.GetAccountPartition(authModel.Account),
-		env.GetRegion(),
-		env.GetCountry(),
-		authModel.Account).Consistency(gocql.LocalQuorum).Scan(&objects)
+		authModel.Region,
+		authModel.Country,
+		authModel.Account,
+		authModel.TenantId).Consistency(gocql.LocalQuorum).Scan(&objects)
 
 	if err != nil && errors.Is(gocql.ErrNotFound, err) {
 		return make(map[string]string), nil

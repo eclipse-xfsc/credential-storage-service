@@ -2,14 +2,12 @@ package common
 
 import (
 	"github.com/eclipse-xfsc/credential-storage-service/docs"
-	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/connection"
-	cryptoProvider "github.com/eclipse-xfsc/credential-storage-service/internal/crypto"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	logPkg "github.com/eclipse-xfsc/microservice-core-go/pkg/logr"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 )
 
 type Environment struct {
@@ -21,6 +19,8 @@ type Environment struct {
 	contentType     string
 	logger          logPkg.Logger
 	isHealthy       bool
+	cryptoProvider  types.CryptoProvider
+	cryptoGroup     string
 }
 
 var env *Environment
@@ -33,6 +33,14 @@ func GetEnvironment() *Environment {
 	return env
 }
 
+func (e *Environment) SetCryptoGroup(group string) {
+	e.cryptoGroup = group
+}
+
+func (e *Environment) GetCryptoGroup() string {
+	return e.cryptoGroup
+}
+
 func (e *Environment) SetSession(session connection.SessionInterface) {
 	e.session = session
 }
@@ -41,16 +49,12 @@ func (e *Environment) GetSession() connection.SessionInterface {
 	return e.session
 }
 
+func (e *Environment) SetCryptoProvider(provider types.CryptoProvider) {
+	e.cryptoProvider = provider
+}
+
 func (e *Environment) GetCryptoProvider() types.CryptoProvider {
-	return cryptoProvider.GetCryptoProvider()
-}
-
-func (e *Environment) GetRegion() string {
-	return config.CurrentStorageConfig.Region
-}
-
-func (e *Environment) GetCountry() string {
-	return config.CurrentStorageConfig.Country
+	return e.cryptoProvider
 }
 
 func (e *Environment) GetAccountPartition(account string) string {

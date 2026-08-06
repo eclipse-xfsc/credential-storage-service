@@ -6,3 +6,5 @@
 jupyter
 .vscode
 .engines
+deployment/helm/Chart.lock
+deployment/helm/charts

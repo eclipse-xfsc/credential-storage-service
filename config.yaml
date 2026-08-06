@@ -1,1 +1,5 @@
 logLevel: info
+crypto:
+  namespace: transit
+  signKey: test
+  grpcAddr: crypto-provider:50051

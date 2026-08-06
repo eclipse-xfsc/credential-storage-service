@@ -17,7 +17,7 @@ import (
 
 	b64 "encoding/base64"
 
-	"github.com/eclipse-xfsc/crypto-provider-core/types"
+	"github.com/eclipse-xfsc/crypto-provider-core/v2/types"
 )
 
 type TestProvider struct {

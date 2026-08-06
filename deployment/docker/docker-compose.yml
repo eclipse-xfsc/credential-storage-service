@@ -1,104 +1,140 @@
-version: "3.8"
-
-networks:
-  cassandra:
-    driver: bridge
+version: "3.9"
 
 services:
-  server:
-    container_name: $PROJECT_NAME-api_server
-    image: ${IMAGE_REPO}:${IMAGE_TAG}
-    build:
-      context: ../../.
-      dockerfile: ./deployment/docker/Dockerfile
-      args:
-        pluginRepoUrl: $pluginRepoUrl
-        pluginTag: $pluginBranch
-
-    ports:
-      - "8080:8080"
-    volumes:
-      - ".:/app"
-    depends_on:
-      cassandra:
-        condition: service_healthy
-      initialize:
-        condition: service_completed_successfully
-      insert:
-        condition: service_completed_successfully
-      nats:
-        condition: service_started
-      vault:
-        condition: service_started
-
-    env_file:
-      - ../../.env
-    networks:
-      - cassandra
+  # Uncomment this service to run the credential storage service in Docker.
+  # credential-storage:
+  #   build:
+  #     context: ../..
+  #     dockerfile: deployment/docker/Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     cassandra-init:
+  #       condition: service_completed_successfully
+  #     crypto-provider:
+  #       condition: service_started
+  #     nats:
+  #       condition: service_healthy
+  #   environment:
+  #     STORAGESERVICE_CASSANDRA_HOST: cassandra:9042
+  #     STORAGESERVICE_CASSANDRA_USER: cassandra
+  #     STORAGESERVICE_CASSANDRA_PASSWORD: cassandra
+  #     STORAGESERVICE_CASSANDRA_KEYSPACE: ocm
+  #     STORAGESERVICE_CRYPTO_NAMESPACE: transit
+  #     STORAGESERVICE_CRYPTO_SIGNKEY: test
+  #     STORAGESERVICE_CRYPTO_GRPC_ADDR: crypto-provider:50051
+  #     STORAGESERVICE_MODE: DIRECT
+  #     STORAGESERVICE_NATS_STORAGETOPIC: storage
+  #     STORAGESERVICE_NATS_URL: nats://nats:4222
+  #     STORAGESERVICE_NATS_QUEUEGROUP: credential-storage-service
+  #     STORAGESERVICE_NATS_REQUEST_TIMEOUT: 10s
+  #   networks:
+  #     - xfsc
 
   cassandra:
-    container_name: $PROJECT_NAME-cassandra
-    image: cassandra:latest
-    restart: always
-    hostname: cassandra
+    image: cassandra:5.0
     ports:
       - "9042:9042"
-    networks:
-      - cassandra
     healthcheck:
-      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
-      interval: 30s
+      test:
+        - CMD-SHELL
+        - cqlsh 127.0.0.1 9042 -e "DESCRIBE KEYSPACES" || exit 1
+      interval: 10s
       timeout: 10s
-      retries: 10
-
-  initialize:
-    container_name: $PROJECT_NAME-initialize
-    image: nuvo/docker-cqlsh
-    command: cqlsh -f /cql/initialize.cql --cqlversion="3.4.6"
+      retries: 30
+      start_period: 30s
+    volumes:
+      - cassandra-data:/var/lib/cassandra
     networks:
-      - cassandra
+      - xfsc
+
+  cassandra-init:
+    image: cassandra:5.0
     depends_on:
       cassandra:
         condition: service_healthy
-    environment:
-      CQLSH_PORT: 9042
-      CQLVERSION: 3.4.6
-    volumes:
-      - "../../scripts/cql/initialize.cql:/cql/initialize.cql"
+    restart: "no"
+    command:
+      - /bin/bash
+      - -ec
+      - |
+        echo "Initializing Cassandra..."
 
-  insert:
-    container_name: $PROJECT_NAME-insert
-    image: nuvo/docker-cqlsh
-    command: cqlsh -f /cql/insert.cql --cqlversion="3.4.6"
+        cqlsh cassandra 9042 <<'CQL'
+        CREATE KEYSPACE IF NOT EXISTS ocm
+        WITH replication = {
+          'class': 'SimpleStrategy',
+          'replication_factor': 1
+        };
+
+        USE ocm;
+        CQL
+
+        echo "Cassandra initialization completed."
     networks:
-      - cassandra
-    depends_on:
-      cassandra:
-        condition: service_healthy
-      initialize:
-        condition: service_completed_successfully
-    environment:
-      CQLSH_PORT: 9042
-      CQLVERSION: 3.4.6
-    volumes:
-      - "../../scripts/cql/insert.cql:/cql/insert.cql"
+      - xfsc
 
   nats:
-    container_name: $PROJECT_NAME-nats
-    image: nats:latest
+    image: nats:2.10-alpine
+    command:
+      - "--http_port"
+      - "8222"
     ports:
       - "4222:4222"
-      - "6222:6222"
       - "8222:8222"
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://127.0.0.1:8222/healthz
+      interval: 5s
+      timeout: 3s
+      retries: 12
     networks:
-      - cassandra
+      - xfsc
 
-  vault:
-    container_name: $PROJECT_NAME-vault
-    image: hashicorp/vault:latest
+  openbao:
+    image: openbao/openbao:latest
+    command: server -dev -dev-root-token-id=dev-root-token
     ports:
       - "8200:8200"
-    networks:
-      - cassandra
+    cap_add:
+      - IPC_LOCK
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: $VAULT_TOKEN
+      BAO_ADDR: http://0.0.0.0:8200
+      BAO_API_ADDR: http://openbao:8200
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -qO-
+        - http://127.0.0.1:8200/v1/sys/health
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - xfsc
+
+  crypto-provider:
+    image: node-654e3bca7fbeeed18f81d7c7.de-west-1.xaas.plus.cloud/tsa/crypto-provider-hashicorp-vault-plugin@sha256:b65581777a9fc28d3aac5757e7125d8e996132753826d55740207166a3aff0bd
+    depends_on:
+      openbao:
+        condition: service_healthy
+    environment:
+      CRYPTO_GRPC_ADDR: 0.0.0.0:50051
+      VAULT_ADRESS: http://openbao:8200
+      VAULT_TOKEN: dev-root-token
+    expose:
+      - "50051"
+    ports:
+      - "50051:50051"
+    networks:
+      - xfsc
+
+volumes:
+  cassandra-data:
+
+networks:
+  xfsc:
+    driver: bridge

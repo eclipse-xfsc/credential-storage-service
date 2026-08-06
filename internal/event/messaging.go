@@ -3,6 +3,8 @@ package event
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
@@ -12,7 +14,7 @@ import (
 	"github.com/eclipse-xfsc/credential-storage-service/pkg/messaging"
 
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/eclipse-xfsc/cloud-event-provider"
+	cloudeventprovider "github.com/eclipse-xfsc/cloud-event-provider"
 	logPkg "github.com/eclipse-xfsc/microservice-core-go/pkg/logr"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwe"
@@ -28,24 +30,33 @@ var storagemessaging = new(StorageMessaging)
 
 func StartCloudEvents() error {
 	log.Info("start messaging!")
-	client, err := cloudeventprovider.New(cloudeventprovider.Config{
-		Protocol: cloudeventprovider.ProtocolTypeNats,
-		Settings: cloudeventprovider.NatsConfig{
-			Url:        config.CurrentStorageConfig.Messaging.Url,
-			QueueGroup: config.CurrentStorageConfig.Messaging.QueueGroup,
-		},
-	}, cloudeventprovider.ConnectionTypeSub, config.CurrentStorageConfig.Messaging.StorageTopic)
+
+	if config.CurrentStorageConfig.Nats.StorageTopic == "" {
+		return fmt.Errorf("nats storage topic is empty")
+	}
+
+	dur, err := time.ParseDuration(config.CurrentStorageConfig.Nats.TimeoutInSec)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+
+	client, err := cloudeventprovider.New(
+		cloudeventprovider.Config{
+			Protocol: cloudeventprovider.ProtocolTypeNats,
+			Settings: cloudeventprovider.NatsConfig{
+				Url:          config.CurrentStorageConfig.Nats.Url,
+				QueueGroup:   config.CurrentStorageConfig.Nats.QueueGroup,
+				TimeoutInSec: dur,
+			},
+		},
+		cloudeventprovider.ConnectionTypeSub,
+		config.CurrentStorageConfig.Nats.StorageTopic,
+	)
+	if err != nil {
+		return err
 	}
 
 	storagemessaging.client = client
-
-	/*defer func() {
-		if err := client.Close(); err != nil {
-			log.Error(err)
-		}
-	}()*/
 
 	go storagemessaging.listen()
 
@@ -55,7 +66,7 @@ func StartCloudEvents() error {
 func (s *StorageMessaging) listen() {
 	for {
 		if err := s.client.SubCtx(context.Background(), handler); err != nil {
-			s.logger.Error(err, "error retrieving message")
+			log.Error(err, "error retrieving message")
 		}
 	}
 }
@@ -78,6 +89,8 @@ func getType(msg messaging.StorageServiceStoreMessage, env *common.Environment) 
 	authModel := model.AuthModel{
 		Account:  msg.AccountId,
 		TenantId: msg.TenantId,
+		Region:   msg.Region,
+		Country:  msg.Country,
 	}
 
 	presentation := false

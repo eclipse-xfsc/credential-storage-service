@@ -1,10 +1,10 @@
 <h1>Introduction</h1>
 
-The Storage Service is a service made for storing credentials and presentations. All content is stored cryptographically protected by [crypto engine](https://gitlab.eclipse.org/eclipse/xfsc/libraries/crypto/engine). Depending on the usage scenario, the service supports different modi which allows it to either use the service directly from remote or internally by nats. In the case of the remote the service enforces an additional encryption layer to ensure the operator exclusion. 
+The Storage Service is a service made for storing credentials and presentations. All content is stored cryptographically protected by a separate crypto-provider process accessed exclusively over gRPC. Depending on the usage scenario, the service supports different modi which allows it to either use the service directly from remote or internally by nats. In the case of the remote the service enforces an additional encryption layer to ensure the operator exclusion.
 
 # Filter Logic
 
-For getting credentials via filter out of the storage, the [presentation definition syntax](https://identity.foundation/presentation-exchange/) is directly used. During the post the credentials will be filtered over the presentation definition as follows: 
+For getting credentials via filter out of the storage, the [presentation definition syntax](https://identity.foundation/presentation-exchange/) is directly used. During the post the credentials will be filtered over the presentation definition as follows:
 ```
 {
 	  "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
@@ -28,7 +28,7 @@ For getting credentials via filter out of the storage, the [presentation definit
   }
 ```
 
-This example searches for credentials with dob OR dateOfBirth in the credentialSubject. The [lib](https://github.com/eclipse-xfsc/oid4-vci-vp-library/-/tree/main?ref_type=heads) is following json path logic. 
+This example searches for credentials with dob OR dateOfBirth in the credentialSubject. The [lib](https://github.com/eclipse-xfsc/oid4-vci-vp-library/-/tree/main?ref_type=heads) is following json path logic.
 
 
 More examples can be found in the dif spec or in the [tests](https://github.com/eclipse-xfsc/oid4-vci-vp-library/-/blob/main/model/presentation/presentationDefinition_test.go?ref_type=heads#L256)
@@ -38,7 +38,7 @@ More examples can be found in the dif spec or in the [tests](https://github.com/
 
 ## Remote Usage Registration
 
-If the remote usage of the storage is enabled the Storage service requires an Registration before the storing can start. This generates in the cassandra db a record where the initial key pairs are stored: 
+If the remote usage of the storage is enabled the Storage service requires an Registration before the storing can start. This generates in the cassandra db a record where the initial key pairs are stored:
 
 ```mermaid
 sequenceDiagram
@@ -53,7 +53,7 @@ Module->>Cloud Storage: Register Account with Self Signed JWT
 Cloud Storage->>Cloud Storage: Insert in Db/Register Device Key
 Cloud Storage->>Module: Recovery Nonce + Nonce
 Module->>Module: Sign Recovery Nonce with Device Key to RJWT
-Module->>Module: Create QR Code (RJWT, CE) 
+Module->>Module: Create QR Code (RJWT, CE)
 Module->>App: Please insert Password
 App->>Module:Password is...
 Module->>Module: Encrypt QR with KDF(PW) and base45 Encoding/Compression
@@ -119,18 +119,18 @@ swag init --parseDependency
 
 # Dependencies
 
-The Service requires a cassandra db and optionally an mobile protection solution(in the case of remote usage from smartphone) In case of hashicorp vault crypto plugin, a hashicorp vault is required.
+The service requires Cassandra and a reachable crypto-provider gRPC endpoint. The selected crypto-provider implementation may additionally require OpenBao/Vault, an HSM, or another backing key store.
 
 # Bootstrap
 
-The service can be started with the docker compose or via helm.  After startup: 
+The service can be started with the docker compose or via helm.  After startup:
 
 1. Use the CQL script to [initialize](./scripts/cql/initialize.cql) the cassandra db
 2. Use Postman/Insomnia + Tokens+ PS256 Key Pairs can be created here: https://dinochiesa.github.io/jwt/
 
 Using docker compose directly:
 
-```	
+```
 docker compose -f docker-compose.yml rm
 docker compose -f docker-compose.yml --env-file=.env up --build --detach
 ```
@@ -138,7 +138,7 @@ docker compose -f docker-compose.yml --env-file=.env up --build --detach
 ## Using Cassandra
 
 Installation: https://cassandra.apache.org/_/quickstart.html
-Python console: 
+Python console:
 ```
  pip install -U cqlsh
 ```
@@ -147,13 +147,13 @@ Note: After bootstrapping the docker compose file, the initialize/insert contain
 ## Statements
 ```
 DESCRIBE keyspaces; //you should see tenant_space here
-select * from tenant_space.credentials;
+select * from ocm.credentials;
 ```
 
 
 # Developer Information
 
-## Setup 
+## Setup
 
 Using [makefile](./makefile)
 
@@ -163,22 +163,22 @@ Using [makefile](./makefile)
 
 #### General
 
-The cassandra database was inserted for a very large scale of credentials combined with a high redudancy for reading. In the proper setup accross datacenters, the database can quarantee a high distributed way of reading and writing data especially for mobile devices an decentralized use cases. 
+The cassandra database was inserted for a very large scale of credentials combined with a high redudancy for reading. In the proper setup accross datacenters, the database can quarantee a high distributed way of reading and writing data especially for mobile devices an decentralized use cases.
 
-All records are <b>signed</b> during insertion which ensures that records can't be tampered outside of the software. This is realized by the [auth middleware](./internal/middleware/authMiddleware.go) The sign/verify key must be created before hand in the crypto engine. 
+All records are <b>signed</b> during insertion which ensures that records can't be tampered outside of the software. This is realized by the [auth middleware](./internal/middleware/authMiddleware.go) The sign/verify key must be created before hand in the crypto engine.
 
 #### Retrieve credentials
 
 ```bash
-cqlsh <cassandra host> <cassandra port> -u <cassandra user> -p <cassandra password> -e "SELECT * FROM tenant_space.credentials;"
+cqlsh <cassandra host> <cassandra port> -u <cassandra user> -p <cassandra password> -e "SELECT * FROM ocm.credentials;"
 
 ```
 
-#### Datamodel 
+#### Datamodel
 
-The database schema of the credential table is designed in such a way that a cassandra table clustering can be constructed accross regions (Country/Region Field) together with the first 4 bytes of the account id as cluster identifier. 
+The database schema of the credential table is designed in such a way that a cassandra table clustering can be constructed accross regions (Country/Region Field) together with the first 4 bytes of the account id as cluster identifier.
 
-## Use Modes 
+## Use Modes
 
 <h3><u> Remote</u> </h3>
 
@@ -189,7 +189,7 @@ The service can be used as a remote storage for mobile applications. In this cas
 
 <h3> Prerequisites</h3>
 
-Each User must have the following preperations to use the backend: 
+Each User must have the following preperations to use the backend:
 
 - Valid Account created and validated over the Account Service
 - Valid Client Certificate for mTLS
@@ -212,7 +212,7 @@ TODO OPENAPI
 
 <h3> Authorization Bearer</h3>
 
-All credential routes are protected by a self signed token which must be created with the registered device key. The jwt must contain in the body: 
+All credential routes are protected by a self signed token which must be created with the registered device key. The jwt must contain in the body:
 
 - Nonce (initial nonce or from receipt)
 - Subject (account id)
@@ -227,7 +227,7 @@ eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiL3Rlc3QyL3RlbmFudF9zcGFjZS9BQkN
 
 <h3> Receipt </h3>
 
-The receipt is returned in an JWE envelop adressed to the device key. After decrypting it, the receipt contains a nonce and nonce expired value for usage in the next call. 
+The receipt is returned in an JWE envelop adressed to the device key. After decrypting it, the receipt contains a nonce and nonce expired value for usage in the next call.
 
 <h3> Usage </h3>
 
@@ -283,7 +283,7 @@ Body: No Body
 Method: DELETE
 
 
-<i>Returns</i> 
+<i>Returns</i>
 
 Body: No Body
 
@@ -294,3 +294,14 @@ Body: No Body
 
 Body: No Body
 Method: GET
+
+
+## Crypto provider gRPC configuration
+
+The storage service does not load Go plugins or crypto modules into its own process. All key generation, random generation, signing, verification, encryption, and decryption operations are delegated through `crypto-provider-core` to the gRPC endpoint configured with:
+
+```bash
+STORAGESERVICE_CRYPTO_GRPC_ADDR=crypto-provider:50051
+```
+
+For local development, `deployment/docker/docker-compose.yml` starts the storage service, Cassandra, OpenBao, and a separate crypto-provider container. Override `CRYPTO_PROVIDER_IMAGE` when a different provider image or version is required.

@@ -21,10 +21,12 @@ func AuthTestModel(deviceKey *jwk.Key) gin.HandlerFunc {
 	}
 }
 
-func createAuthModel(account string, tenantId string, deviceKey *jwk.Key) model.AuthModel {
+func createAuthModel(account, tenantId, region, country string, deviceKey *jwk.Key) model.AuthModel {
 	authModel := model.AuthModel{
 		TenantId:   tenantId,
 		Account:    account,
+		Country:    country,
+		Region:     region,
 		Device_Key: deviceKey,
 	}
 	return authModel
@@ -33,7 +35,16 @@ func createAuthModel(account string, tenantId string, deviceKey *jwk.Key) model.
 func authModelFunc(c *gin.Context, deviceKey *jwk.Key) {
 	account := c.Param("account")
 	tenantId := c.Param("tenantId")
-	authModel := createAuthModel(account, tenantId, deviceKey)
+	region := c.Param("region")
+	country := c.Param("country")
+
+	authModel := createAuthModel(account, tenantId, region, country, deviceKey)
+
+	if account == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": AccountIdMissing})
+		c.Abort()
+		return
+	}
 
 	if tenantId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": TenantIdMissing})
@@ -41,8 +52,14 @@ func authModelFunc(c *gin.Context, deviceKey *jwk.Key) {
 		return
 	}
 
-	if account == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": AccountIdMissing})
+	if region == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": RegionMissing})
+		c.Abort()
+		return
+	}
+
+	if country == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": CountryMissing})
 		c.Abort()
 		return
 	}
