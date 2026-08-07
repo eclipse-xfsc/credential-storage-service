@@ -111,6 +111,9 @@ spec:
 
              {{- end }}
 
+            - name: STORAGESERVICE_MIGRATIONS_TABLE
+              value: "storage_schema_migration"
+
             - name: STORAGESERVICE_NATS_STORAGETOPIC
               value: {{ .Values.config.messaging.storageTopic | quote }}
 
