@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS credentials (
+CREATE TABLE IF NOT EXISTS ocm.credentials (
     accountPartition text,
     region text,
     country text,
