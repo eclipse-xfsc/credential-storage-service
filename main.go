@@ -3,16 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"os"
 
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/api"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/common"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/connection"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/middleware"
 	"github.com/eclipse-xfsc/credential-storage-service/internal/migration"
 	core "github.com/eclipse-xfsc/crypto-provider-core/v2"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/eclipse-xfsc/credential-storage-service/internal/config"
@@ -132,8 +135,24 @@ func startServer() error {
 	return server.Run(config.CurrentStorageConfig.ListenPort)
 }
 
+var engineTimeout = os.Getenv("ENGINE_TIMEOUT")
+
 func initializeCrypto() (error, func()) {
-	provider, stop := core.CreateCryptoEngine(config.CurrentStorageConfig.Crypto.GrpcAddr, insecure.NewCredentials())
+
+	timeout := 10
+	var err error
+	if engineTimeout != "" {
+		timeout, err = strconv.Atoi(engineTimeout)
+
+		if err != nil {
+			logger.Error("Error converting timeout from ENV ENGINE_TIMEOUT", zap.Error(err))
+		}
+	}
+
+	cctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	defer cancel()
+
+	provider, stop, err := core.CreateCryptoEngine(cctx, config.CurrentStorageConfig.Crypto.GrpcAddr, insecure.NewCredentials())
 	if provider == nil {
 		return fmt.Errorf("failed to create crypto gRPC client for %q", config.CurrentStorageConfig.Crypto.GrpcAddr), nil
 	}

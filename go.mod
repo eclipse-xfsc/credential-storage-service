@@ -3,9 +3,10 @@ module github.com/eclipse-xfsc/credential-storage-service
 go 1.25.0
 
 require (
+	github.com/bytedance/gopkg v0.1.4
 	github.com/cloudevents/sdk-go/v2 v2.16.0
 	github.com/eclipse-xfsc/cloud-event-provider v0.1.5
-	github.com/eclipse-xfsc/crypto-provider-core/v2 v2.2.1
+	github.com/eclipse-xfsc/crypto-provider-core/v2 v2.3.0
 	github.com/eclipse-xfsc/microservice-core-go v1.1.2
 	github.com/eclipse-xfsc/nats-message-library v1.4.3
 	github.com/eclipse-xfsc/oid4-vci-vp-library v1.6.6
@@ -19,6 +20,8 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
+	go.uber.org/zap v1.27.0
+	google.golang.org/grpc v1.77.0
 )
 
 require (
@@ -102,7 +105,6 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.16.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
@@ -112,7 +114,6 @@ require (
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
-	google.golang.org/grpc v1.77.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

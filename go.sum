@@ -12,6 +12,8 @@ github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 h1:mXoPYz/Ul5HYE
 github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932/go.mod h1:NOuUCSz6Q9T7+igc/hlvDOUdtWKryOrtFyIVABv/p7k=
 github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 h1:DDGfHa7BWjL4YnC6+E63dPcxHo2sUxDIu8g3QgEJdRY=
 github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869/go.mod h1:Ekp36dRnpXw/yCqJaO+ZrUyxD+3VXMFFr56k5XYrpB4=
+github.com/bytedance/gopkg v0.1.4 h1:oZnQwnX82KAIWb7033bEwtxvTqXcYMxDBaQxo5JJHWM=
+github.com/bytedance/gopkg v0.1.4/go.mod h1:v1zWfPm21Fb+OsyXN2VAHdL6TBb2L88anLQgdyje6R4=
 github.com/bytedance/sonic v1.13.2 h1:8/H1FempDZqC4VqjptGo14QQlJx8VdZJegxs6wwfqpQ=
 github.com/bytedance/sonic v1.13.2/go.mod h1:o68xyaF9u2gvVBuGHPlUVCy+ZfmNNO5ETf1+KgkJhz4=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=
@@ -48,8 +50,8 @@ github.com/eclipse-xfsc/cloud-event-provider v0.1.5 h1:UMDMsPtqyKSh2R6SYkiL602ZW
 github.com/eclipse-xfsc/cloud-event-provider v0.1.5/go.mod h1:jVuAEKC3wIzB1yQci7TvvsYFYFVxmgvpyb/ORsr3Z/4=
 github.com/eclipse-xfsc/crypto-provider-core v1.4.1 h1:qRPfErTz4b2ea4QnFuRBLHyVXyEkynTnwtzZ1YL0E5I=
 github.com/eclipse-xfsc/crypto-provider-core v1.4.1/go.mod h1:dkIbKR46k3rwBY85gpgLbElrd/7/S78oKH8D/E1Rl+4=
-github.com/eclipse-xfsc/crypto-provider-core/v2 v2.2.1 h1:qGYHk6GcUl/KoJyLhAiTXJ03MSiWjsLBZt/euHz3ydg=
-github.com/eclipse-xfsc/crypto-provider-core/v2 v2.2.1/go.mod h1:hGNyvd79fLlKlN10VsturS7zHEGyHTpYLMSvIdL8ZoQ=
+github.com/eclipse-xfsc/crypto-provider-core/v2 v2.3.0 h1:FtYtDREOzD2kkDiV2H4eP3ooKCniA9XbM/drpYfq2vM=
+github.com/eclipse-xfsc/crypto-provider-core/v2 v2.3.0/go.mod h1:hGNyvd79fLlKlN10VsturS7zHEGyHTpYLMSvIdL8ZoQ=
 github.com/eclipse-xfsc/did-core v1.1.0 h1:qyJhqyTQ7Svfq9sJ0R5XJBdbfq5OWKUyLf2BGOgMgRg=
 github.com/eclipse-xfsc/did-core v1.1.0/go.mod h1:phsq2M1icllbtRxENojD6QVtcpZmdiu2T9MSuu2d9ac=
 github.com/eclipse-xfsc/did-core/v2 v2.1.0 h1:56fifKCHqw2WrCxBC3PERRh0Qqv+rd9gg+9QRYADnDU=
