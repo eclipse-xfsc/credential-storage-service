@@ -68,7 +68,10 @@ func startDbConnection() error {
 }
 
 func refineRoutes(rg *gin.RouterGroup) {
-	storageGroup := rg.Group("/storage")
+	tenantGroup := rg.Group("/:tenantId")
+	regionGroup := tenantGroup.Group("/:region")
+	countryGroup := regionGroup.Group("/:country")
+	storageGroup := countryGroup.Group("/storage")
 	accountGroup := storageGroup.Group("/:account")
 
 	switch env.GetMode() {
