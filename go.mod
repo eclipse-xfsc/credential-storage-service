@@ -9,7 +9,7 @@ require (
 	github.com/eclipse-xfsc/crypto-provider-core/v2 v2.3.0
 	github.com/eclipse-xfsc/microservice-core-go v1.1.2
 	github.com/eclipse-xfsc/nats-message-library v1.4.3
-	github.com/eclipse-xfsc/oid4-vci-vp-library v1.6.6
+	github.com/eclipse-xfsc/oid4-vci-vp-library v1.9.2
 	github.com/eclipse-xfsc/ssi-jwt v1.2.1
 	github.com/eclipse-xfsc/ssi-jwt/v2 v2.2.0
 	github.com/gin-gonic/gin v1.10.0

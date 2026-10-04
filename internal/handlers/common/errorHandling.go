@@ -16,6 +16,7 @@ func ErrorResponse(c *gin.Context, err string, exception error) error {
 	}
 	c.JSON(400, gin.H{
 		"message": err,
+		"details": exception.Error(),
 	})
 	return errors.New(err)
 }

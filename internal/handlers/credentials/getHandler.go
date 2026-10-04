@@ -59,7 +59,7 @@ func post(c *gin.Context, env *common.Environment, presentation bool) any {
 		return nil
 	}
 
-	var payload oid4vip.PresentationDefinition
+	var payload oid4vip.DCQLQuery
 
 	if len(body) > 0 {
 		err = json.Unmarshal(body, &payload)
@@ -82,7 +82,7 @@ func post(c *gin.Context, env *common.Environment, presentation bool) any {
 	return nil
 }
 
-func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.Environment, filter *oid4vip.PresentationDefinition, presentation bool) (*model.GetCredentialModel, error) {
+func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.Environment, filter *oid4vip.DCQLQuery, presentation bool) (*model.GetCredentialModel, error) {
 	logger := env.GetLogger()
 	session := env.GetSession()
 
@@ -159,14 +159,16 @@ func getCredentials(ctx context.Context, authModel model.AuthModel, env *common.
 		}
 
 		logger.Info("Found credentials before filter", "amount", len(foundCredentials))
+		if filter != nil && (len(filter.CredentialSets) > 0 || len(filter.Credentials) > 0) {
+			res, err := filter.Filter(foundCredentials)
 
-		res, err := filter.Filter(foundCredentials)
-
-		if err != nil {
-			return nil, err
+			if err != nil {
+				return nil, err
+			}
+			model.Groups = res
+		} else {
+			model.Credentials = foundCredentials
 		}
-
-		model.Groups = res
 
 		return &model, nil
 	}

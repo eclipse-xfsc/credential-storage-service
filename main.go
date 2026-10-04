@@ -135,7 +135,6 @@ func addRemoteRouterGroup(rg *gin.RouterGroup) {
 func startServer() error {
 	server := serverPkg.New(env, config.CurrentStorageConfig.ServerMode)
 	server.Add(refineRoutes)
-
 	// Run server
 	return server.Run(config.CurrentStorageConfig.ListenPort)
 }
