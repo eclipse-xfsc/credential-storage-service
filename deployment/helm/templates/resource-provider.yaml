@@ -14,5 +14,6 @@ spec:
 {{- end }}
   outputs:
     env:
+      STORAGE_URL: {{ printf "http://%s.%s.svc.cluster.local:%v" (include "app.name" .) .Release.Namespace .Values.service.port | quote }}
       STORAGE_TOPIC: {{ .Values.config.messaging.storageTopic }}    
 {{- end }}
