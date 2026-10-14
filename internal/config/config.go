@@ -36,7 +36,7 @@ type storageConfiguration struct {
 
 	Migrations struct {
 		Enabled bool          `mapstructure:"enabled" envconfig:"STORAGESERVICE_MIGRATIONS_ENABLED" default:"true"`
-		Table   string        `mapstructure:"table" envconfig:"STORAGESERVICE_MIGRATIONS_TABLE" default:"schema_migrations"`
+		Table   string        `mapstructure:"table" envconfig:"STORAGESERVICE_MIGRATIONS_TABLE" default:"storage_schema_migrations"`
 		Timeout time.Duration `mapstructure:"timeout" envconfig:"STORAGESERVICE_MIGRATIONS_TIMEOUT" default:"2m"`
 	} `mapstructure:"migrations"`
 }
